@@ -1,0 +1,860 @@
+openapi: 3.0.3
+
+info:
+  title: UORA Journal API
+  version: 1.0.0
+  description: Journal Management System API
+
+
+servers:
+  - url: http://localhost:5000
+    description: Local Development Server
+
+
+tags:
+
+  - name: Auth
+    description: Authentication APIs
+
+  - name: Dashboard
+    description: Dashboard Analytics APIs
+
+  - name: Journals
+    description: Journal Management APIs
+
+  - name: Volumes
+    description: Volume Management APIs
+
+  - name: Issues
+    description: Issue Management APIs
+
+  - name: Articles
+    description: Article Publishing APIs
+
+  - name: Submissions
+    description: Manuscript Submission APIs
+
+  - name: Reviewers
+    description: Reviewer Management APIs
+
+  - name: Reviews
+    description: Peer Review APIs
+
+  - name: Editorial Decision
+    description: Editorial Decision APIs
+
+  - name: Revisions
+    description: Revision Workflow APIs
+
+  - name: Health
+    description: Health Check APIs
+
+
+
+components:
+
+
+  securitySchemes:
+
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+
+  schemas:
+
+
+    Journal:
+
+      type: object
+
+      properties:
+
+        id:
+
+          type: string
+
+
+        name:
+
+          type: string
+
+          example: International Journal of AI & Computer Science
+
+
+        shortName:
+
+          type: string
+
+          example: IJCS
+
+
+        slug:
+
+          type: string
+
+          example: ijcs
+
+
+        subdomain:
+
+          type: string
+
+          example: ijcs
+
+
+        issn:
+
+          type: string
+
+          example: 1234-5678
+
+
+        eissn:
+
+          type: string
+
+          example: 8765-4321
+
+
+
+
+    Volume:
+
+      type: object
+
+      properties:
+
+        id:
+
+          type: string
+
+
+        journalId:
+
+          type: string
+
+
+        volumeNumber:
+
+          type: integer
+
+          example: 1
+
+
+        year:
+
+          type: integer
+
+          example: 2026
+
+
+
+
+    Issue:
+
+      type: object
+
+      properties:
+
+        id:
+
+          type: string
+
+
+        journalId:
+
+          type: string
+
+
+        volumeId:
+
+          type: string
+
+
+        issueNumber:
+
+          type: integer
+
+          example: 1
+
+
+        title:
+
+          type: string
+
+          example: January 2026 Issue
+
+
+        status:
+
+          type: string
+
+          example: UPCOMING
+
+
+
+
+    Submission:
+
+      type: object
+
+      properties:
+
+        id:
+
+          type: string
+
+
+        paperId:
+
+          type: string
+
+          example: IJCS-2026-289215
+
+
+        title:
+
+          type: string
+
+          example: Artificial Intelligence in Healthcare
+
+
+        abstract:
+
+          type: string
+
+
+        status:
+
+          type: string
+
+          example: SUBMITTED
+
+
+
+
+    Reviewer:
+
+      type: object
+
+      properties:
+
+        id:
+
+          type: string
+
+
+        fullName:
+
+          type: string
+
+          example: Dr. Emily Watson
+
+
+        email:
+
+          type: string
+
+          example: reviewer@example.com
+
+
+        expertise:
+
+          type: string
+
+          example: Artificial Intelligence
+
+
+
+
+security:
+
+  - bearerAuth: []
+
+
+
+paths:
+
+
+  /:
+
+
+    get:
+
+
+      tags:
+
+        - Health
+
+
+      summary: Health Check
+
+
+      security: []
+
+
+      description: Check API status
+
+
+      responses:
+
+
+        "200":
+
+
+          description: API Running
+
+
+          content:
+
+
+            application/json:
+
+
+              schema:
+
+
+                type: object
+
+
+                properties:
+
+
+                  success:
+
+
+                    type: boolean
+
+
+                    example: true
+
+
+                  message:
+
+
+                    type: string
+
+
+                    example: UORA Journal API is running successfully
+
+
+
+
+
+  /api/auth/login:
+
+
+    post:
+
+
+      tags:
+
+
+        - Auth
+
+
+      summary: Login (all roles: AUTHOR, REVIEWER, EDITOR, SUB_ADMIN, ADMIN)
+
+
+      security: []
+
+
+      requestBody:
+
+
+        required: true
+
+
+        content:
+
+
+          application/json:
+
+
+            schema:
+
+
+              type: object
+
+
+              required:
+
+
+                - email
+
+                - password
+
+
+              properties:
+
+
+                email:
+
+
+                  type: string
+
+
+                  example: admin@uora.com
+
+
+                password:
+
+
+                  type: string
+
+
+                  example: password123
+
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Login successful
+
+
+        "401":
+
+
+          description: Invalid credentials
+
+
+
+
+
+  /api/dashboard:
+
+
+    get:
+
+
+      tags:
+
+
+        - Dashboard
+
+
+      summary: Get Dashboard Statistics
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Dashboard fetched successfully
+
+
+          content:
+
+
+            application/json:
+
+
+              schema:
+
+
+                type: object
+
+
+                properties:
+
+
+                  success:
+
+
+                    type: boolean
+
+
+                    example: true
+
+
+                  message:
+
+
+                    type: string
+
+
+                    example: Dashboard fetched successfully
+
+
+                  data:
+
+
+                    type: object
+
+
+
+
+
+  /api/journals:
+
+
+    get:
+
+
+      tags:
+
+
+        - Journals
+
+
+      summary: Get All Journals
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Journals fetched successfully
+
+
+          content:
+
+
+            application/json:
+
+
+              schema:
+
+
+                type: object
+
+
+                properties:
+
+
+                  success:
+
+
+                    type: boolean
+
+
+                  message:
+
+
+                    type: string
+
+
+                  data:
+
+
+                    type: array
+
+
+                    items:
+
+
+                      $ref: '#/components/schemas/Journal'
+
+
+
+
+    post:
+
+
+      tags:
+
+
+        - Journals
+
+
+      summary: Create Journal
+
+
+      requestBody:
+
+
+        required: true
+
+
+        content:
+
+
+          application/json:
+
+
+            schema:
+
+
+              type: object
+
+
+              required:
+
+
+                - name
+
+                - shortName
+
+                - slug
+
+
+              properties:
+
+
+                name:
+
+
+                  type: string
+
+
+                  example: International Journal of AI & Computer Science
+
+
+                shortName:
+
+
+                  type: string
+
+
+                  example: IJCS
+
+
+                slug:
+
+
+                  type: string
+
+
+                  example: ijcs
+
+
+                subdomain:
+
+
+                  type: string
+
+
+                  example: ijcs
+
+
+
+      responses:
+
+
+        "201":
+
+
+          description: Journal created successfully
+
+
+
+
+
+  /api/volumes:
+
+
+    get:
+
+
+      tags:
+
+
+        - Volumes
+
+
+      summary: Get All Volumes
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Volumes fetched successfully
+
+
+
+    post:
+
+
+      tags:
+
+
+        - Volumes
+
+
+      summary: Create Volume
+
+
+      requestBody:
+
+
+        required: true
+
+
+        content:
+
+
+          application/json:
+
+
+            schema:
+
+
+              type: object
+
+
+              properties:
+
+
+                journalId:
+
+
+                  type: string
+
+
+                volumeNumber:
+
+
+                  type: integer
+
+
+                  example: 1
+
+
+                year:
+
+
+                  type: integer
+
+
+                  example: 2026
+
+
+      responses:
+
+
+        "201":
+
+
+          description: Volume created successfully
+
+
+
+
+
+  /api/volumes/{id}:
+
+
+    get:
+
+
+      tags:
+
+
+        - Volumes
+
+
+      summary: Get Volume By ID
+
+
+      parameters:
+
+
+        - name: id
+
+          in: path
+
+          required: true
+
+          schema:
+
+            type: string
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Volume fetched successfully
+
+
+
+    patch:
+
+
+      tags:
+
+
+        - Volumes
+
+
+      summary: Update Volume
+
+
+      parameters:
+
+
+        - name: id
+
+          in: path
+
+          required: true
+
+          schema:
+
+            type: string
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Volume updated successfully
+
+
+
+    delete:
+
+
+      tags:
+
+
+        - Volumes
+
+
+      summary: Delete Volume
+
+
+      parameters:
+
+
+        - name: id
+
+          in: path
+
+          required: true
+
+          schema:
+
+            type: string
+
+
+      responses:
+
+
+        "200":
+
+
+          description: Volume deleted successfully
+

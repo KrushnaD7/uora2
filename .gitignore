@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.local
+.next/
+frontend/next-build/
+dist/
+coverage/
+.DS_Store
+uploads/
+*.log
+*.pid
+*.zip
+pnpm-lock.yaml
+pnpm-workspace.yaml
+Claude outputs/
+schema_dump.sql
+backend/migration/
+.env.production
+.env*.local

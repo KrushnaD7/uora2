@@ -1,0 +1,22 @@
+{
+  "name": "uora",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UORA Publications \u2014 international academic publishing platform (Next.js frontend + Express backend).",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "build": "npm run install:all && npm --prefix backend run build && npm --prefix frontend run build",
+    "start": "node start-all.js",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "start:backend": "npm --prefix backend run start",
+    "start:frontend": "npm --prefix frontend run start",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "prisma:push": "npm --prefix backend run prisma:migrate",
+    "prisma:seed": "npm --prefix backend run prisma:seed"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

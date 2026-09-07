@@ -1,0 +1,530 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.1.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ActivityLog {
+  id          String    @id @default(uuid()) 
+  userId      String    @map("user_id")
+  action      LogAction
+  module      String
+  entity      String?   @map("entity")
+  entityId    String?   @map("entity_id")
+  description String? @db.Text
+  ipAddress   String?   @map("ip_address")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@map("activity_logs")
+}
+
+model Journal {
+  id                   String                @id @default(uuid()) 
+  name                 String
+  shortName            String                @map("short_name")
+  slug                 String                @unique
+  subdomain            String                @unique
+  issn                 String?
+  eissn                String?
+  email                String?
+  phone                String?
+  status               JournalStatus         @default(ACTIVE)
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  deletedAt            DateTime?             @map("deleted_at")
+  articles             Article[]
+  issues               Issue[]
+  settings             JournalSetting?
+  reviewerApplications ReviewerApplication[]
+  submissions          Submission[]
+  volumes              Volume[]
+
+  @@index([slug])
+  @@index([subdomain])
+  @@map("journals")
+}
+
+model JournalSetting {
+  id           String   @id @default(uuid()) 
+  journalId    String   @unique 
+  logo         String?
+  favicon      String?
+  about        String? @db.Text
+  aimsScope    String?  @map("aims_scope") @db.Text
+  ethics       String? @db.Text
+  guidelines   String? @db.Text
+  contactEmail String?  @map("contact_email")
+  contactPhone String?  @map("contact_phone")
+  address      String?
+  facebook     String?
+  twitter      String?
+  linkedin     String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  journal      Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@map("journal_settings")
+}
+
+model Author {
+  id          String             @id @default(uuid()) 
+  userId      String?            @unique @map("user_id")
+  fullName    String             @map("full_name")
+  email       String?
+  mobile      String?
+  country     String?
+  institution String?
+  designation String?
+  orcid       String?
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  deletedAt   DateTime?          @map("deleted_at")
+  submissions SubmissionAuthor[]
+  user        Users?             @relation(fields: [userId], references: [id])
+  journalSuggestions JournalSuggestion[]
+
+  @@index([email])
+  @@map("authors")
+}
+
+model Reviewer {
+  id          String    @id @default(uuid()) 
+  fullName    String    @map("full_name")
+  email       String    @unique
+  mobile      String?
+  country     String?
+  institution String?
+  designation String?
+  expertise   String? @db.Text
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  submissionReviewers SubmissionReviewer[]
+
+  @@index([email])
+  @@map("reviewers")
+}
+
+model Submission {
+  id        String           @id @default(uuid()) 
+  journalId String           
+  paperId   String           @unique @map("paper_id")
+  title     String
+  abstract  String @db.Text
+  status    SubmissionStatus @default(SUBMITTED)
+  reviewerRequested Boolean @default(false) @map("reviewer_requested")
+
+  correspondingEmail String  @map("corresponding_email")
+  correspondingPhone String? @map("corresponding_phone")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  article Article?
+
+  authors   SubmissionAuthor[]
+  reviewers SubmissionReviewer[]
+  files     SubmissionFile[]
+  revisions SubmissionRevision[] // <-- ADD THIS
+
+  statusHistory SubmissionStatusHistory[]
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@index([journalId])
+  @@index([status])
+  @@index([paperId])
+  @@map("submissions")
+}
+
+model SubmissionRevision {
+  id           String @id @default(uuid()) 
+  submissionId String 
+
+  revisionNumber Int @default(1) @map("revision_number")
+
+  remarks String? @db.Text
+
+  filePath     String @map("file_path")
+  originalName String @map("original_name")
+  storedName   String @map("stored_name")
+
+  submittedAt DateTime @default(now()) @map("submitted_at")
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("submission_revisions")
+}
+
+model SubmissionAuthor {
+  id              String     @id @default(uuid()) 
+  submissionId    String     
+  authorId        String     
+  authorOrder     Int        @default(1) @map("author_order")
+  isCorresponding Boolean    @default(false) @map("is_corresponding")
+  author          Author     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, authorId])
+  @@index([submissionId])
+  @@index([authorId])
+  @@map("submission_authors")
+}
+
+model SubmissionReviewer {
+  id String @id @default(uuid()) 
+
+  submissionId String 
+  reviewerId   String 
+  assignedBy   String @map("assigned_by")
+
+  deadline DateTime?
+  remarks  String? @db.Text
+
+  status ReviewAssignmentStatus @default(PENDING)
+
+  assignedAt  DateTime  @default(now())
+  acceptedAt  DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewer   Reviewer   @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  assignedByUser Users  @relation(fields: [assignedBy], references: [id])
+
+  review Review?
+
+  @@unique([submissionId, reviewerId])
+  @@index([submissionId])
+  @@index([reviewerId])
+  @@index([assignedBy])
+  @@map("submission_reviewers")
+}
+
+model Review {
+  id String @id @default(uuid()) 
+
+  submissionReviewerId String @unique 
+
+  recommendation ReviewRecommendation
+
+  overallRating Int?
+
+  commentsToAuthor String? @db.Text
+
+  commentsToEditor String? @db.Text
+
+  submittedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  submissionReviewer SubmissionReviewer @relation(fields: [submissionReviewerId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model SubmissionFile {
+  id           String     @id @default(uuid()) 
+  submissionId String     
+  fileType     FileType   @map("file_type")
+  originalName String     @map("original_name")
+  storedName   String     @map("stored_name")
+  filePath     String     @map("file_path")
+  mimeType     String?    @map("mime_type")
+  fileSize     Int?       @map("file_size")
+  uploadedAt   DateTime   @default(now()) @map("uploaded_at")
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("submission_files")
+}
+
+model SubmissionStatusHistory {
+  id           String           @id @default(uuid()) 
+  submissionId String           
+  status       SubmissionStatus
+  remarks      String? @db.Text
+  changedAt    DateTime         @default(now()) @map("changed_at")
+  submission   Submission       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("submission_status_history")
+}
+
+model ReviewerApplication {
+  id          String         @id @default(uuid()) 
+  journalId   String         
+  fullName    String         @map("full_name")
+  email       String
+  mobile      String?
+  institution String?
+  designation String?
+  expertise   String? @db.Text
+  cvFile      String?        @map("cv_file")
+  status      ReviewerStatus @default(PENDING)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  journal     Journal        @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@index([journalId])
+  @@index([email])
+  @@map("reviewer_applications")
+}
+
+model Volume {
+  id           String   @id @default(uuid()) 
+  journalId    String   
+  volumeNumber Int      @map("volume_number")
+  year         Int
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  issues       Issue[]
+  journal      Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([journalId, volumeNumber])
+  @@map("volumes")
+}
+
+model Issue {
+  id          String      @id @default(uuid()) 
+  journalId   String      
+  volumeId    String      
+  issueNumber Int         @map("issue_number")
+  title       String?
+  status      IssueStatus @default(UPCOMING)
+  publishedAt DateTime?   @map("published_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  articles    Article[]
+  journal     Journal     @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  volume      Volume      @relation(fields: [volumeId], references: [id], onDelete: Cascade)
+
+  @@unique([volumeId, issueNumber])
+  @@map("issues")
+}
+
+model Article {
+  id           String     @id @default(uuid()) 
+  journalId    String     
+  issueId      String     
+  submissionId String     @unique 
+  title        String
+  doi          String?    @unique
+  pages        String?
+  pdfUrl       String?    @map("pdf_url")
+  scheduledPublishAt DateTime?           @map("scheduled_publish_at")
+  publishedAt  DateTime?   @map("published_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  issue        Issue      @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  journal      Journal    @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([journalId])
+  @@index([issueId])
+  @@map("articles")
+}
+
+enum JournalStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  INITIAL_SCREENING
+  UNDER_REVIEW
+  REVISION_REQUIRED
+  REVISED_SUBMITTED
+  ACCEPTED
+  REJECTED
+  PUBLISHED
+}
+
+enum ReviewerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum FileType {
+  MANUSCRIPT
+  REVISION
+  SUPPLEMENTARY
+  ARTICLE_PDF
+  REVIEWER_CV
+}
+
+enum IssueStatus {
+  UPCOMING
+  PUBLISHED
+}
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PUBLISH
+}
+
+enum ReviewAssignmentStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+enum ReviewRecommendation {
+  ACCEPT
+  MINOR_REVISION
+  MAJOR_REVISION
+  REJECT
+}
+
+enum UserRole {
+  ADMIN
+  SUB_ADMIN
+  EDITOR
+  REVIEWER
+  AUTHOR
+}
+
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+
+model Users {
+
+  id String @id @default(uuid())
+
+  name String
+
+  email String @unique
+
+  password String
+
+  role UserRole @default(AUTHOR)
+
+  status UserStatus @default(ACTIVE)
+
+  // One-time, expiring password-reset token. Only the SHA-256 hash is stored.
+  passwordResetTokenHash String?  @map("password_reset_token_hash")
+  passwordResetExpiresAt DateTime? @map("password_reset_expires_at")
+
+  // Time the password was last changed (used to invalidate old tokens).
+  passwordChangedAt DateTime? @map("password_changed_at")
+
+  emailVerified Boolean     @default(false) @map("email_verified")
+  emailVerifyTokenHash String? @map("email_verify_token_hash")
+  emailVerifyExpiresAt DateTime? @map("email_verify_expires_at")
+
+  // Brute-force protection: failed-login counter and temporary lockout.
+  loginAttempts Int       @default(0) @map("login_attempts")
+  loginLockUntil DateTime? @map("login_lock_until")
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  authorProfile     Author?
+  activityLogs      ActivityLog[]
+  reviewAssignments SubmissionReviewer[]
+  notifications     Notification[]
+  suggestionHistories JournalSuggestionHistory[]
+  refreshTokens     RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+enum JournalSuggestionStatus {
+  SUBMITTED
+  UNDER_EDITOR_REVIEW
+  EDITOR_RECOMMENDED
+  ADMIN_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+  CLOSED
+}
+
+model JournalSuggestion {
+  id             String                  @id @default(uuid()) 
+  authorId       String                  
+  title          String
+  subjectDomain  String                  @map("subject_domain") @db.Text
+  description    String @db.Text
+  reason         String @db.Text
+  supportingInfo String?                 @map("supporting_info") @db.Text
+  attachmentUrl  String?                 @map("attachment_url")
+  status         JournalSuggestionStatus @default(SUBMITTED)
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @updatedAt @map("updated_at")
+
+  author         Author                  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  history        JournalSuggestionHistory[]
+
+  @@map("journal_suggestions")
+}
+
+model JournalSuggestionHistory {
+  id           String                  @id @default(uuid()) 
+  suggestionId String                  
+  status       JournalSuggestionStatus
+  actionBy     String                  @map("action_by")
+  remarks      String? @db.Text
+  createdAt    DateTime                @default(now()) @map("created_at")
+
+  suggestion   JournalSuggestion       @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  user         Users                   @relation(fields: [actionBy], references: [id], onDelete: Cascade)
+
+  @@map("journal_suggestion_history")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) 
+  userId    String   @map("user_id")
+  title     String
+  message   String @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

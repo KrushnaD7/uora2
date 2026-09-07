@@ -1,0 +1,120 @@
+Diagram 1 — High-Level System Architecture
+                          Internet
+                               │
+                               ▼
+                    UORA Platform (Next.js)
+                               │
+     ┌───────────────┬──────────┴───────────┬──────────────┐
+     │               │                      │              │
+ Public Website   Author Portal      Reviewer Portal   Admin Portal
+                         │
+                         ▼
+                    Express REST API
+                         │
+        ┌────────────────┼────────────────────┐
+        │                │                    │
+ Authentication      Business Logic      File Storage
+        │                │                    │
+        └────────────────┼────────────────────┘
+                         │
+                      Prisma ORM
+                         │
+                    PostgreSQL DB
+Diagram 2 — Backend Layer
+Frontend
+
+↓
+
+Routes
+
+↓
+
+Middlewares
+
+↓
+
+Controllers
+
+↓
+
+Services
+
+↓
+
+Repositories
+
+↓
+
+Prisma
+
+↓
+
+PostgreSQL
+Diagram 3 — Module Architecture
+Auth
+
+↓
+
+Users
+
+↓
+
+Roles
+
+↓
+
+Journals
+
+↓
+
+Volumes
+
+↓
+
+Issues
+
+↓
+
+Articles
+
+↓
+
+Submissions
+
+↓
+
+Reviews
+
+↓
+
+Editorial Decisions
+
+↓
+
+Notifications
+
+↓
+
+Reports
+Diagram 4 — Deployment
+Browser
+
+↓
+
+Next.js
+
+↓
+
+Express API
+
+↓
+
+Prisma
+
+↓
+
+PostgreSQL
+
+↓
+
+Storage

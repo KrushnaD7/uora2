@@ -1,0 +1,446 @@
+[
+  {
+    "issueNumber": 1,
+    "issueTitle": "Volume 1 Issue 1 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I1-A01",
+    "title": "Survey-Based Case Study of Supply Chain Management (SCM) in Construction Industries",
+    "authors": [
+      "Akash Wankhade",
+      "Gurupreet Attal"
+    ],
+    "pages": "1-9",
+    "fileName": "ujgsm-v1i1-a1.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i1-a1.pdf"
+  },
+  {
+    "issueNumber": 1,
+    "issueTitle": "Volume 1 Issue 1 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I1-A02",
+    "title": "Evaluating Environmental Benefits of Rooftop Solar PV through Carbon Displacement Analysis",
+    "authors": [
+      "Sagar Kauthalkar",
+      "Yogesh Sathe"
+    ],
+    "pages": "10-17",
+    "fileName": "ujgsm-v1i1-a2.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i1-a2.pdf"
+  },
+  {
+    "issueNumber": 1,
+    "issueTitle": "Volume 1 Issue 1 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I1-A03",
+    "title": "A Review on Minimum Quantity Lubrication (MQL) Using Hybrid Nanofluids: Enhancing Tool Life and Surface Quality in Metal Cutting",
+    "authors": [
+      "Komal Morankar",
+      "Ravindra Deshmukh"
+    ],
+    "pages": "18-31",
+    "fileName": "ujgsm-v1i1-a3.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i1-a3.pdf"
+  },
+  {
+    "issueNumber": 1,
+    "issueTitle": "Volume 1 Issue 1 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I1-A04",
+    "title": "Performance and Emission Characteristics of a Four-Stroke Engine Using E20 Fuel Blend",
+    "authors": [
+      "Prashant patil",
+      "Umesh Hiwalrale",
+      "Chandrashekhar Ingle"
+    ],
+    "pages": "32-38",
+    "fileName": "ujgsm-v1i1-a4.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i1-a4.pdf"
+  },
+  {
+    "issueNumber": 1,
+    "issueTitle": "Volume 1 Issue 1 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I1-A05",
+    "title": "Enhancing Wear Performance of W-Cu Composites through Response Surface Methodology",
+    "authors": [
+      "Harshal Kale",
+      "Sambhaji Sathe"
+    ],
+    "pages": "39-46",
+    "fileName": "ujgsm-v1i1-a5.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i1-a5.pdf"
+  },
+  {
+    "issueNumber": 2,
+    "issueTitle": "Volume 1 Issue 2 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I2-A01",
+    "title": "Optimization of Wear Resistance and Scratch Hardness of Boron Carbide Reinforced Polyester Powder Coatings Using Taguchi Method",
+    "authors": [
+      "Chandrakant Sawant",
+      "Ravindra Karvande",
+      "Vilas Jadhav"
+    ],
+    "pages": "47-60",
+    "fileName": "ujgsm-v1i2-a1.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i2-a1.pdf"
+  },
+  {
+    "issueNumber": 2,
+    "issueTitle": "Volume 1 Issue 2 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I2-A02",
+    "title": "Parametric Study and Optimization of Wire Electrical Discharge Machining Parameters for SS304 Stainless Steel",
+    "authors": [
+      "Gajanan Khose",
+      "Shantisagar Biradar",
+      "Mohammad Irfan"
+    ],
+    "pages": "61-73",
+    "fileName": "ujgsm-v1i2-a2.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i2-a2.pdf"
+  },
+  {
+    "issueNumber": 2,
+    "issueTitle": "Volume 1 Issue 2 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I2-A03",
+    "title": "Optimization of Noise Reduction in Diesel Generator Set Enclosures Using Taguchi Method",
+    "authors": [
+      "Pathan Tanzimkhan Lalkhan",
+      "Ravindra Karvande",
+      "Mohammad Irfan H"
+    ],
+    "pages": "74-82",
+    "fileName": "ujgsm-v1i2-a3.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i2-a3.pdf"
+  },
+  {
+    "issueNumber": 2,
+    "issueTitle": "Volume 1 Issue 2 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I2-A04",
+    "title": "A Comprehensive Review on Electrical Discharge Machining and Wire Electrical Discharge Machining of Titanium Alloys",
+    "authors": [
+      "Mohammed Aakef Farooqui",
+      "Ravindra Karvande",
+      "Mohammad Irfan"
+    ],
+    "pages": "83-93",
+    "fileName": "ujgsm-v1i2-a4.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i2-a4.pdf"
+  },
+  {
+    "issueNumber": 2,
+    "issueTitle": "Volume 1 Issue 2 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I2-A05",
+    "title": "An In-Depth Review of Supply Chain Management and Data Analytics Applications in the Automobile Manufacturing Industry",
+    "authors": [
+      "Abhishek Ugle",
+      "Shantisagar Biradar",
+      "Swapnil N. Dhole"
+    ],
+    "pages": "94-104",
+    "fileName": "ujgsm-v1i2-a5.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i2-a5.pdf"
+  },
+  {
+    "issueNumber": 3,
+    "issueTitle": "Volume 1 Issue 3 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I3-A01",
+    "title": "Competency Gap Analysis of Engineering Students: A Systematic Review of Employability Skills, Industry Expectations, and Institutional Practices in India",
+    "authors": [
+      "Raman G. Karde",
+      "Bhakti Banwaskar Deshmukh"
+    ],
+    "pages": "105-116",
+    "fileName": "ujgsm-v1i3-a1.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i3-a1.pdf"
+  },
+  {
+    "issueNumber": 3,
+    "issueTitle": "Volume 1 Issue 3 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I3-A02",
+    "title": "Supply Chain Cost Forecasting and Data Analytics in the Automobile Manufacturing Industry",
+    "authors": [
+      "Abhishek Ugle",
+      "Shantisagar Biradar",
+      "Swapnil. N. Dhole"
+    ],
+    "pages": "117-125",
+    "fileName": "ujgsm-v1i3-a2.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i3-a2.pdf"
+  },
+  {
+    "issueNumber": 3,
+    "issueTitle": "Volume 1 Issue 3 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I3-A03",
+    "title": "A Review on Noise Reduction in Diesel Generator Set Enclosures Using Passive Acoustic Control and Taguchi-Based Optimization Techniques",
+    "authors": [
+      "Pathan Tanzimkhan Lalkhan",
+      "Ravindra Karvande",
+      "Mohammad Irfan H"
+    ],
+    "pages": "126-136",
+    "fileName": "ujgsm-v1i3-a3.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i3-a3.pdf"
+  },
+  {
+    "issueNumber": 3,
+    "issueTitle": "Volume 1 Issue 3 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I3-A04",
+    "title": "Experimental Investigation and Optimization of WEDM Parameters for Titanium Alloy Considering MRR",
+    "authors": [
+      "Mohammed Aakef Farooqui",
+      "Ravindra Karvande",
+      "Mohammad Irfan"
+    ],
+    "pages": "137-148",
+    "fileName": "ujgsm-v1i3-a4.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i3-a4.pdf"
+  },
+  {
+    "issueNumber": 3,
+    "issueTitle": "Volume 1 Issue 3 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I3-A05",
+    "title": "A Comprehensive Review of Wire Electrical Discharge Machining: Principles, Parameters, Performance Measures, and Optimization Techniques",
+    "authors": [
+      "Gajanan Khose",
+      "Shantisagar Biradar",
+      "Mohammad Irfan"
+    ],
+    "pages": "149-157",
+    "fileName": "ujgsm-v1i3-a5.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i3-a5.pdf"
+  },
+  {
+    "issueNumber": 3,
+    "issueTitle": "Volume 1 Issue 3 (2025)",
+    "publishedDate": "2025-08-30",
+    "volumeNumber": 1,
+    "year": 2025,
+    "paperId": "UJGSM-V1I3-A06",
+    "title": "A Review on Polyester Powder Coatings: Materials, Deposition Techniques, Wear Mechanisms, and Nanofiller-Based Performance Enhancement",
+    "authors": [
+      "Chandrakant Sawant",
+      "Ravindra Karvande",
+      "Vilas Jadhav"
+    ],
+    "pages": "158-167",
+    "fileName": "ujgsm-v1i3-a6.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i3-a6.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A01",
+    "title": "Clinical Evaluation of Individualized Homoeopathic Medicines as Add-On Therapy in Acute Uncomplicated Lower Urinary Tract Infection in Females: A Prospective Single-Arm Study",
+    "authors": [
+      "Jayapriya Beniwal",
+      "Sunil Kumar"
+    ],
+    "pages": "181-192",
+    "fileName": "ujgsm-v1i4-a1.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a1.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A02",
+    "title": "Socio-Economic Profile and Participation of Local Communities in the Implementation of the Biological Diversity Act",
+    "authors": [
+      "Rohit Yadav"
+    ],
+    "pages": "168-180",
+    "fileName": "ujgsm-v1i4-a2.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a2.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A03",
+    "title": "Legal Analysis of Forensic DNA Profiling: Issues and Challenges in India",
+    "authors": [
+      "Vaishnavi Yadav",
+      "Jyotsna Singh"
+    ],
+    "pages": "192-208",
+    "fileName": "ujgsm-v1i4-a3.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a3.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A04",
+    "title": "Enhancement of Wear Resistance of Hybrid Powder Coatings Using Nanoparticle Reinforcement",
+    "authors": [
+      "Akshay Shinde",
+      "M. S. Harne"
+    ],
+    "pages": "209-221",
+    "fileName": "ujgsm-v1i4-a4.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a4.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A05",
+    "title": "A Comprehensive Review on Optimization of Wire Electrical Discharge Machining (WEDM) Parameters and Performance Characteristics",
+    "authors": [
+      "Siddiqui Mohd Abdul Mukhtadir Siddiqui Abdul Rub",
+      "Brijbhushan Shukla"
+    ],
+    "pages": "222-235",
+    "fileName": "ujgsm-v1i4-a5.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a5.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A06",
+    "title": "Linking Environmental Stress, Institutional Response, and Child Nutrition: A Conceptual and Empirical Model from Marathwada",
+    "authors": [
+      "Priyanka M. Shejwal",
+      "Rajkumar H. Mhaske"
+    ],
+    "pages": "236-252",
+    "fileName": "ujgsm-v1i4-a6.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a6.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A07",
+    "title": "Advanced Machining Processes in Modern Manufacturing: A Critical Review",
+    "authors": [
+      "Saurabh S. Joshi",
+      "Ravindra L. Karwande",
+      "Sachin B. Chhabile"
+    ],
+    "pages": "253-261",
+    "fileName": "ujgsm-v1i4-a7.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a7.pdf"
+  },
+  {
+    "issueNumber": 4,
+    "issueTitle": "Volume 1 Issue 4 (2026)",
+    "publishedDate": "2026-02-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I4-A08",
+    "title": "Performance Optimization of Plate Fin Heat Sink Using ANSYS and Response Surface Methodology: A Review",
+    "authors": [
+      "Shaikh Yahya Gulam Rasool",
+      "A.V. Kodarkar"
+    ],
+    "pages": "262-284",
+    "fileName": "ujgsm-v1i4-a8.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i4-a8.pdf"
+  },
+  {
+    "issueNumber": 5,
+    "issueTitle": "Volume 1 Issue 5 (2026)",
+    "publishedDate": "2026-03-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I5-A01",
+    "title": "From Internal Combustion to Electric Mobility: A Mixed-Method Investigation of Resilience, Innovation, and Strategic Adaptation among Auto Ancillary Units in the Marathwada Region",
+    "authors": [
+      "Pooja Manohar Wankhade",
+      "Gurpreet Attal"
+    ],
+    "pages": "1-18",
+    "fileName": "ujgsm-v1i5-a1.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i5-a1.pdf"
+  },
+  {
+    "issueNumber": 5,
+    "issueTitle": "Volume 1 Issue 5 (2026)",
+    "publishedDate": "2026-03-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I5-A02",
+    "title": "Mechanical Performance and Mix Optimization of M50 Concrete Incorporating Metakaolin and Waste Foundry Sand",
+    "authors": [
+      "Nayan Pawar",
+      "V.B Chavan",
+      "L.S Mahajan"
+    ],
+    "pages": "19-32",
+    "fileName": "ujgsm-v1i5-a2.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i5-a2.pdf"
+  },
+  {
+    "issueNumber": 5,
+    "issueTitle": "Volume 1 Issue 5 (2026)",
+    "publishedDate": "2026-03-15",
+    "volumeNumber": 1,
+    "year": 2026,
+    "paperId": "UJGSM-V1I5-A03",
+    "title": "Statistical Optimization of Wire EDM Parameters for Surface Roughness in P-20 Tool Steel Using Orthogonal Array Design, ANOVA, and Regression Modeling",
+    "authors": [
+      "Siddiqui Mohd Abdul Mukhtadir Siddiqui Abdul Rub",
+      "Brijbhushan Shukla"
+    ],
+    "pages": "33-42",
+    "fileName": "ujgsm-v1i5-a3.pdf",
+    "pdfUrl": "/uploads/articles/ujgsm-v1i5-a3.pdf"
+  }
+]

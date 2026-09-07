@@ -1,0 +1,127 @@
+This is RBAC.
+
+Role Hierarchy
+Platform Owner
+
+↓
+
+Super Admin
+
+↓
+
+Admin
+
+↓
+
+Editor-in-Chief
+
+↓
+
+Managing Editor
+
+↓
+
+Editor
+
+↓
+
+Reviewer
+
+↓
+
+Author
+
+↓
+
+Public User
+Better RBAC (Recommended)
+
+Instead of hierarchy:
+
+User
+
+↓
+
+Journal Membership
+
+↓
+
+Journal
+
+↓
+
+Role
+
+↓
+
+Permissions
+
+Example
+
+Krushna
+
+↓
+
+Journal A
+
+↓
+
+Author
+
+──────────────
+
+Journal B
+
+↓
+
+Reviewer
+
+──────────────
+
+Journal C
+
+↓
+
+Editor
+Permission Flow
+User
+
+↓
+
+JWT
+
+↓
+
+Role
+
+↓
+
+Permission
+
+↓
+
+API
+
+↓
+
+Database
+Portal Access
+Visitor
+
+↓
+
+Landing
+
+↓
+
+Login
+
+↓
+
+Author
+
+Reviewer
+
+Editor
+
+Admin

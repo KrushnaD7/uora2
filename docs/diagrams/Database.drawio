@@ -1,0 +1,122 @@
+Instead of putting all tables together, divide into domains.
+
+Authentication
+Users
+
+↓
+
+User Profile
+
+↓
+
+User Roles
+
+↓
+
+Roles
+
+↓
+
+Permissions
+Journal
+Journal
+
+↓
+
+Volume
+
+↓
+
+Issue
+
+↓
+
+Article
+Submission
+Submission
+
+↓
+
+Submission Version
+
+↓
+
+Submission Files
+
+↓
+
+Submission Authors
+Review
+Submission
+
+↓
+
+Reviewer Assignment
+
+↓
+
+Review
+
+↓
+
+Editorial Decision
+Notification
+User
+
+↓
+
+Notifications
+Administration
+Audit Logs
+
+Settings
+
+Announcements
+
+Media
+Complete Database
+User
+
+↓
+
+Journal Member
+
+↓
+
+Journal
+
+↓
+
+Volume
+
+↓
+
+Issue
+
+↓
+
+Article
+
+↓
+
+Article File
+
+──────────────────────
+
+Submission
+
+↓
+
+Reviewer Assignment
+
+↓
+
+Review
+
+↓
+
+Editorial Decision
+
+↓
+
+Publication
