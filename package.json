@@ -5,7 +5,7 @@
   "description": "UORA Publications \u2014 international academic publishing platform (Next.js frontend + Express backend).",
   "scripts": {
     "install:all": "npm --prefix backend install && npm --prefix frontend install",
-    "build": "npm run install:all && npm --prefix backend run build && npm --prefix frontend run build",
+    "build": "npm run install:all && npm --prefix backend run build && npm --prefix backend run prisma:deploy && npm --prefix frontend run build",
     "start": "node start-all.js",
     "build:backend": "npm --prefix backend run build",
     "build:frontend": "npm --prefix frontend run build",

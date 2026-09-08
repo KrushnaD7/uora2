@@ -27,7 +27,6 @@ if (!process.env.UV_THREADPOOL_SIZE) {
   process.env.UV_THREADPOOL_SIZE = "4";
 }
 
-const { execSync } = require("child_process");
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
@@ -74,49 +73,12 @@ console.log("[server] required env vars present ✓");
 console.log("[server] PORT =", PORT);
 console.log("[server] NODE_ENV =", process.env.NODE_ENV || "(not set)");
 
-// --- Auto-migrate: apply any pending Prisma migrations on startup ---
-// This removes the need for SSH access -- migrations run automatically on
-// each deploy. `prisma migrate deploy` is fully idempotent: it only applies
-// migrations not yet recorded in _prisma_migrations, and after the initial
-// run this step completes in <1 second. Runs synchronously so the server
-// never starts against a stale schema.
-console.log("[server] running database migrations...");
-try {
-  execSync("npx prisma migrate deploy", {
-    cwd: BACKEND_DIR,
-    stdio: "inherit",
-    timeout: 60_000,
-  });
-  console.log("[server] migrations applied ✓");
-} catch (err) {
-  console.error("[server] migration failed:", err.message);
-  console.error("[server] the app will attempt to start -- check DB connectivity.");
-  // Don't exit: the tables may already exist from a previous run, and
-  // a transient network blip during deploy shouldn't permanently down
-  // the site.
-}
-
-// --- Auto-seed: ensure the admin account exists ---
-// Uses a standalone JS script instead of inline code to avoid shell-escaping
-// issues on Linux. Falls back silently -- the admin can also be created via
-// POST /api/auth/bootstrap-admin with the ADMIN_BOOTSTRAP_SECRET header.
-const seedScript = path.join(BACKEND_DIR, "seed-admin.js");
-if (fs.existsSync(seedScript)) {
-  console.log("[server] ensuring admin account...");
-  try {
-    execSync(`node ${seedScript}`, {
-      cwd: BACKEND_DIR,
-      stdio: "inherit",
-      timeout: 30_000,
-    });
-    console.log("[server] admin account ready ✓");
-  } catch (err) {
-    console.error("[server] seed failed:", err.message);
-  }
-} else {
-  console.log("[server] seed-admin.js not found, skipping admin seed.");
-  console.log("[server] Use POST /api/auth/bootstrap-admin to create admin.");
-}
+// --- Migration & seed moved to build step ---
+// Do NOT spawn child processes (execSync) at startup. Hostinger's shared
+// hosting has a 120-process limit; spawning prisma/node children during boot
+// pushes the account over the cap, triggering cascading 503s and restarts.
+// Migrations run during `npm run build` instead (see root package.json).
+// The admin account is created via POST /api/auth/bootstrap-admin.
 
 process.on("uncaughtException", (error) => {
   console.error("[server] uncaught exception:", error);
