@@ -34,12 +34,14 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   images: {
-    // AVIF encoding (via sharp) is meaningfully more CPU/memory-hungry per
-    // request than WebP for very little extra size saving -- not worth the
-    // load on a shared, resource-capped host. WebP alone still optimizes
-    // every image; this just drops the expensive second encode.
-    formats: ["image/webp"],
-    minimumCacheTTL: 60 * 60 * 24 * 30,
+    // Disable runtime image optimization entirely on Hostinger shared hosting.
+    // The sharp-based /_next/image endpoint is too CPU-intensive for a
+    // resource-capped shared host -- every image request spikes CPU and
+    // triggers 503s that cascade to JS chunks, breaking the whole page.
+    // Images are served as-is from /images/ (which already has a 1-year
+    // Cache-Control header below). Pre-optimize images at build time or
+    // before committing instead.
+    unoptimized: true,
   },
   async headers() {
     return [
@@ -100,9 +102,9 @@ const nextConfig: NextConfig = {
     if (!isServer && config.optimization?.splitChunks) {
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
-        minSize: 100000,
-        maxInitialRequests: 6,
-        maxAsyncRequests: 6,
+        minSize: 200000,
+        maxInitialRequests: 4,
+        maxAsyncRequests: 4,
       };
     }
     return config;
