@@ -169,11 +169,33 @@ async function main() {
 
   const server = http.createServer((req, res) => {
     const url = req.url || "/";
-    // Diagnostic endpoint (handled here, before Express/Next) -- returns the
-    // live DB connectivity result so the exact error can be read remotely.
+    // Diagnostic endpoint (handled here, before Express/Next) -- runs a LIVE
+    // DB query with a hard 6s timeout so it always returns something (result
+    // or the exact error) instead of hanging forever.
     if (url === "/__dbcheck") {
       res.setHeader("Content-Type", "application/json");
-      return res.end(JSON.stringify(dbStatus));
+      const timeout = new Promise((_, rej) =>
+        setTimeout(() => rej(new Error("CHECK_TIMEOUT_6s")), 6000)
+      );
+      Promise.race([
+        (async () => {
+          const users = await prisma.users.count();
+          return { ok: true, users, startupCheck: dbStatus };
+        })(),
+        timeout,
+      ])
+        .then((r) => res.end(JSON.stringify(r)))
+        .catch((e) =>
+          res.end(
+            JSON.stringify({
+              ok: false,
+              error: String(e && e.message ? e.message : e),
+              stack: e && e.stack ? e.stack.split("\n").slice(0, 4) : undefined,
+              startupCheck: dbStatus,
+            })
+          )
+        );
+      return;
     }
     if (url === "/api" || url.startsWith("/api/")) {
       return backendApp(req, res);
