@@ -1,55 +1,40 @@
+import path from "path";
+import os from "os";
 import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
 /**
- * Build a MariaDB driver adapter for Prisma Client.
+ * Resolve the SQLite database file path.
  *
- * With `driverAdapters` + `queryCompiler` enabled in schema.prisma, Prisma no
- * longer loads the native Rust query engine (which crashed with
- * "PANIC: timer has gone away" on Hostinger's process-capped shared hosting).
- * It uses an in-process WASM query compiler plus the `mariadb` JS driver.
+ * The file MUST live outside the deployment directory, which Hostinger's Web
+ * App replaces on every redeploy (that would wipe the data). We put it under
+ * the account home directory (persistent across deploys) unless DATABASE_FILE
+ * overrides it.
+ */
+export function resolveDbFile(): string {
+  if (process.env.DATABASE_FILE) return process.env.DATABASE_FILE;
+  const home = process.env.HOME || os.homedir() || process.cwd();
+  return path.join(home, "uora-data", "uora.db");
+}
+
+/**
+ * Prisma Client backed by SQLite via the libsql driver adapter.
  *
- * CONNECTION METHOD: on Hostinger shared hosting the account's firewall drops
- * TCP connections to MySQL (127.0.0.1:3306 just hangs), so we connect over the
- * MySQL Unix socket instead -- the same path phpMyAdmin uses. The socket path
- * is `/var/lib/mysql/mysql.sock` by default and can be overridden with
- * DB_SOCKET_PATH. Credentials still come from DATABASE_URL. Set DB_USE_TCP=1
- * to force TCP (host/port from DATABASE_URL) e.g. for local development.
+ * With `driverAdapters` + `queryCompiler`, Prisma uses an in-process WASM
+ * query compiler plus this pure-JS driver -- no native Rust engine, no Tokio
+ * threads. SQLite itself is a single file: no DB server, no socket, no TCP,
+ * no connection pool. This removes the entire class of connection/threading
+ * problems that MySQL hit on Hostinger shared hosting.
  */
 const prismaClientSingleton = () => {
   const isProduction = process.env.NODE_ENV === "production";
+  const dbFile = resolveDbFile();
 
-  const url = new URL(process.env.DATABASE_URL as string);
-  const connectionLimit = Number(url.searchParams.get("connection_limit")) || 2;
-
-  const common = {
-    user: decodeURIComponent(url.username),
-    password: decodeURIComponent(url.password),
-    database: url.pathname.replace(/^\//, ""),
-    connectionLimit,
-    // Fail fast instead of hanging if the connection can't be established.
-    connectTimeout: 10_000,
-    acquireTimeout: 10_000,
-    idleTimeout: 60,
-  };
-
-  const useTcp = process.env.DB_USE_TCP === "1";
-  const socketPath = process.env.DB_SOCKET_PATH || "/var/lib/mysql/mysql.sock";
-
-  const adapter = useTcp
-    ? new PrismaMariaDb({
-        ...common,
-        host: url.hostname,
-        port: url.port ? Number(url.port) : 3306,
-      })
-    : new PrismaMariaDb({
-        ...common,
-        socketPath,
-      });
+  const adapter = new PrismaLibSQL({ url: `file:${dbFile}` });
 
   return new PrismaClient({
     adapter,

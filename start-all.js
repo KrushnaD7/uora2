@@ -131,30 +131,26 @@ async function main() {
   const backendApp = require(path.join(BACKEND_DIR, "dist", "app")).default;
   const { startScheduler } = require(path.join(BACKEND_DIR, "dist", "scheduler"));
   const { prisma } = require(path.join(BACKEND_DIR, "dist", "config", "prisma"));
+  const { initializeDatabase } = require(path.join(BACKEND_DIR, "dist", "config", "db-init"));
 
-  // --- DB connectivity check: log the EXACT error so we stop guessing ---
-  // NON-BLOCKING: runs in the background so it can never delay server.listen().
-  // Masks the password but shows the host/user/db actually being used.
-  const rawUrl = process.env.DATABASE_URL || "";
-  const maskedUrl = rawUrl.replace(/:\/\/([^:]+):[^@]*@/, "://$1:***@");
-  console.log("[server] DB check using:", maskedUrl);
-  (async () => {
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      const users = await prisma.users.count();
-      dbStatus = { checked: true, ok: true, userCount: users, url: maskedUrl };
-      console.log("[server] DB connection OK ✓  users in table:", users);
-    } catch (err) {
-      dbStatus = {
-        checked: true,
-        ok: false,
-        url: maskedUrl,
-        error: String(err && err.message ? err.message : err),
-        code: err && err.code ? err.code : undefined,
-      };
-      console.error("[server] DB CONNECTION FAILED:", dbStatus.error);
-    }
-  })();
+  // --- Database: SQLite file. Create the schema on first run and ensure the
+  // admin account exists. Fast (local file, no network), so we await it here
+  // before serving requests. If it fails, log loudly but still start the app
+  // so the site is reachable and the error is visible.
+  try {
+    await initializeDatabase();
+    const users = await prisma.users.count();
+    dbStatus = { checked: true, ok: true, userCount: users };
+    console.log("[server] database ready ✓  users:", users);
+  } catch (err) {
+    dbStatus = {
+      checked: true,
+      ok: false,
+      error: String(err && err.message ? err.message : err),
+      stack: err && err.stack ? err.stack.split("\n").slice(0, 4) : undefined,
+    };
+    console.error("[server] DATABASE INIT FAILED:", dbStatus.error);
+  }
 
   // --- Frontend: run Next.js programmatically in this same process ---
   const next = require(path.join(FRONTEND_DIR, "node_modules", "next"));

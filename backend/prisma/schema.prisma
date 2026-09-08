@@ -1,28 +1,29 @@
 generator client {
   provider = "prisma-client-js"
   // queryCompiler + driverAdapters replace the Rust query engine with an
-  // in-process WASM query compiler plus a pure-JS database driver. This
-  // removes the native engine entirely -- no Tokio runtime, no extra OS
-  // threads -- which fixes the "PANIC: timer has gone away" crash on
-  // resource-capped shared hosting (Hostinger's 120-process limit starved
-  // the Rust engine's threads). No binaryTargets are needed without the
-  // engine binary.
+  // in-process WASM query compiler plus a pure-JS database driver. No native
+  // engine, no Tokio threads -- avoids the "PANIC: timer has gone away" crash
+  // on resource-capped shared hosting.
   previewFeatures = ["driverAdapters", "queryCompiler"]
 }
 
 datasource db {
-  provider = "mysql"
+  // SQLite: the database is a single file on disk. No DB server, no socket,
+  // no TCP, no connection pool -- eliminates every connection problem that
+  // MySQL hit on Hostinger shared hosting. The file lives at a persistent
+  // path (see config/prisma.ts) that survives redeploys.
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model ActivityLog {
-  id          String    @id @default(uuid()) 
+  id          String    @id @default(uuid())
   userId      String    @map("user_id")
-  action      LogAction
+  action      String
   module      String
   entity      String?   @map("entity")
   entityId    String?   @map("entity_id")
-  description String? @db.Text
+  description String?
   ipAddress   String?   @map("ip_address")
   createdAt   DateTime  @default(now()) @map("created_at")
   user        Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -33,7 +34,7 @@ model ActivityLog {
 }
 
 model Journal {
-  id                   String                @id @default(uuid()) 
+  id                   String                @id @default(uuid())
   name                 String
   shortName            String                @map("short_name")
   slug                 String                @unique
@@ -42,7 +43,7 @@ model Journal {
   eissn                String?
   email                String?
   phone                String?
-  status               JournalStatus         @default(ACTIVE)
+  status               String                @default("ACTIVE")
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
   deletedAt            DateTime?             @map("deleted_at")
@@ -59,14 +60,14 @@ model Journal {
 }
 
 model JournalSetting {
-  id           String   @id @default(uuid()) 
-  journalId    String   @unique 
+  id           String   @id @default(uuid())
+  journalId    String   @unique
   logo         String?
   favicon      String?
-  about        String? @db.Text
-  aimsScope    String?  @map("aims_scope") @db.Text
-  ethics       String? @db.Text
-  guidelines   String? @db.Text
+  about        String?
+  aimsScope    String?  @map("aims_scope")
+  ethics       String?
+  guidelines   String?
   contactEmail String?  @map("contact_email")
   contactPhone String?  @map("contact_phone")
   address      String?
@@ -81,7 +82,7 @@ model JournalSetting {
 }
 
 model Author {
-  id          String             @id @default(uuid()) 
+  id          String             @id @default(uuid())
   userId      String?            @unique @map("user_id")
   fullName    String             @map("full_name")
   email       String?
@@ -102,14 +103,14 @@ model Author {
 }
 
 model Reviewer {
-  id          String    @id @default(uuid()) 
+  id          String    @id @default(uuid())
   fullName    String    @map("full_name")
   email       String    @unique
   mobile      String?
   country     String?
   institution String?
   designation String?
-  expertise   String? @db.Text
+  expertise   String?
   isActive    Boolean   @default(true) @map("is_active")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -122,12 +123,12 @@ model Reviewer {
 }
 
 model Submission {
-  id        String           @id @default(uuid()) 
-  journalId String           
+  id        String           @id @default(uuid())
+  journalId String
   paperId   String           @unique @map("paper_id")
   title     String
-  abstract  String @db.Text
-  status    SubmissionStatus @default(SUBMITTED)
+  abstract  String
+  status    String           @default("SUBMITTED")
   reviewerRequested Boolean @default(false) @map("reviewer_requested")
 
   correspondingEmail String  @map("corresponding_email")
@@ -142,7 +143,7 @@ model Submission {
   authors   SubmissionAuthor[]
   reviewers SubmissionReviewer[]
   files     SubmissionFile[]
-  revisions SubmissionRevision[] // <-- ADD THIS
+  revisions SubmissionRevision[]
 
   statusHistory SubmissionStatusHistory[]
 
@@ -155,12 +156,12 @@ model Submission {
 }
 
 model SubmissionRevision {
-  id           String @id @default(uuid()) 
-  submissionId String 
+  id           String @id @default(uuid())
+  submissionId String
 
   revisionNumber Int @default(1) @map("revision_number")
 
-  remarks String? @db.Text
+  remarks String?
 
   filePath     String @map("file_path")
   originalName String @map("original_name")
@@ -175,9 +176,9 @@ model SubmissionRevision {
 }
 
 model SubmissionAuthor {
-  id              String     @id @default(uuid()) 
-  submissionId    String     
-  authorId        String     
+  id              String     @id @default(uuid())
+  submissionId    String
+  authorId        String
   authorOrder     Int        @default(1) @map("author_order")
   isCorresponding Boolean    @default(false) @map("is_corresponding")
   author          Author     @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -190,16 +191,16 @@ model SubmissionAuthor {
 }
 
 model SubmissionReviewer {
-  id String @id @default(uuid()) 
+  id String @id @default(uuid())
 
-  submissionId String 
-  reviewerId   String 
+  submissionId String
+  reviewerId   String
   assignedBy   String @map("assigned_by")
 
   deadline DateTime?
-  remarks  String? @db.Text
+  remarks  String?
 
-  status ReviewAssignmentStatus @default(PENDING)
+  status String @default("PENDING")
 
   assignedAt  DateTime  @default(now())
   acceptedAt  DateTime?
@@ -222,17 +223,17 @@ model SubmissionReviewer {
 }
 
 model Review {
-  id String @id @default(uuid()) 
+  id String @id @default(uuid())
 
-  submissionReviewerId String @unique 
+  submissionReviewerId String @unique
 
-  recommendation ReviewRecommendation
+  recommendation String
 
   overallRating Int?
 
-  commentsToAuthor String? @db.Text
+  commentsToAuthor String?
 
-  commentsToEditor String? @db.Text
+  commentsToEditor String?
 
   submittedAt DateTime @default(now())
 
@@ -246,9 +247,9 @@ model Review {
 }
 
 model SubmissionFile {
-  id           String     @id @default(uuid()) 
-  submissionId String     
-  fileType     FileType   @map("file_type")
+  id           String     @id @default(uuid())
+  submissionId String
+  fileType     String     @map("file_type")
   originalName String     @map("original_name")
   storedName   String     @map("stored_name")
   filePath     String     @map("file_path")
@@ -262,10 +263,10 @@ model SubmissionFile {
 }
 
 model SubmissionStatusHistory {
-  id           String           @id @default(uuid()) 
-  submissionId String           
-  status       SubmissionStatus
-  remarks      String? @db.Text
+  id           String           @id @default(uuid())
+  submissionId String
+  status       String
+  remarks      String?
   changedAt    DateTime         @default(now()) @map("changed_at")
   submission   Submission       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
@@ -274,16 +275,16 @@ model SubmissionStatusHistory {
 }
 
 model ReviewerApplication {
-  id          String         @id @default(uuid()) 
-  journalId   String         
+  id          String         @id @default(uuid())
+  journalId   String
   fullName    String         @map("full_name")
   email       String
   mobile      String?
   institution String?
   designation String?
-  expertise   String? @db.Text
+  expertise   String?
   cvFile      String?        @map("cv_file")
-  status      ReviewerStatus @default(PENDING)
+  status      String         @default("PENDING")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
   journal     Journal        @relation(fields: [journalId], references: [id], onDelete: Cascade)
@@ -294,8 +295,8 @@ model ReviewerApplication {
 }
 
 model Volume {
-  id           String   @id @default(uuid()) 
-  journalId    String   
+  id           String   @id @default(uuid())
+  journalId    String
   volumeNumber Int      @map("volume_number")
   year         Int
   createdAt    DateTime @default(now()) @map("created_at")
@@ -308,12 +309,12 @@ model Volume {
 }
 
 model Issue {
-  id          String      @id @default(uuid()) 
-  journalId   String      
-  volumeId    String      
+  id          String      @id @default(uuid())
+  journalId   String
+  volumeId    String
   issueNumber Int         @map("issue_number")
   title       String?
-  status      IssueStatus @default(UPCOMING)
+  status      String      @default("UPCOMING")
   publishedAt DateTime?   @map("published_at")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
@@ -326,10 +327,10 @@ model Issue {
 }
 
 model Article {
-  id           String     @id @default(uuid()) 
-  journalId    String     
-  issueId      String     
-  submissionId String     @unique 
+  id           String     @id @default(uuid())
+  journalId    String
+  issueId      String
+  submissionId String     @unique
   title        String
   doi          String?    @unique
   pages        String?
@@ -347,83 +348,7 @@ model Article {
   @@map("articles")
 }
 
-enum JournalStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum SubmissionStatus {
-  DRAFT
-  SUBMITTED
-  INITIAL_SCREENING
-  UNDER_REVIEW
-  REVISION_REQUIRED
-  REVISED_SUBMITTED
-  ACCEPTED
-  REJECTED
-  PUBLISHED
-}
-
-enum ReviewerStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum FileType {
-  MANUSCRIPT
-  REVISION
-  SUPPLEMENTARY
-  ARTICLE_PDF
-  REVIEWER_CV
-}
-
-enum IssueStatus {
-  UPCOMING
-  PUBLISHED
-}
-
-enum LogAction {
-  CREATE
-  UPDATE
-  DELETE
-  LOGIN
-  LOGOUT
-  PUBLISH
-}
-
-enum ReviewAssignmentStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  COMPLETED
-}
-
-enum ReviewRecommendation {
-  ACCEPT
-  MINOR_REVISION
-  MAJOR_REVISION
-  REJECT
-}
-
-enum UserRole {
-  ADMIN
-  SUB_ADMIN
-  EDITOR
-  REVIEWER
-  AUTHOR
-}
-
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  BLOCKED
-}
-
-
 model Users {
-
   id String @id @default(uuid())
 
   name String
@@ -432,9 +357,9 @@ model Users {
 
   password String
 
-  role UserRole @default(AUTHOR)
+  role String @default("AUTHOR")
 
-  status UserStatus @default(ACTIVE)
+  status String @default("ACTIVE")
 
   // One-time, expiring password-reset token. Only the SHA-256 hash is stored.
   passwordResetTokenHash String?  @map("password_reset_token_hash")
@@ -479,27 +404,16 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-enum JournalSuggestionStatus {
-  SUBMITTED
-  UNDER_EDITOR_REVIEW
-  EDITOR_RECOMMENDED
-  ADMIN_REVIEW
-  CHANGES_REQUESTED
-  APPROVED
-  REJECTED
-  CLOSED
-}
-
 model JournalSuggestion {
-  id             String                  @id @default(uuid()) 
-  authorId       String                  
+  id             String                  @id @default(uuid())
+  authorId       String
   title          String
-  subjectDomain  String                  @map("subject_domain") @db.Text
-  description    String @db.Text
-  reason         String @db.Text
-  supportingInfo String?                 @map("supporting_info") @db.Text
+  subjectDomain  String                  @map("subject_domain")
+  description    String
+  reason         String
+  supportingInfo String?                 @map("supporting_info")
   attachmentUrl  String?                 @map("attachment_url")
-  status         JournalSuggestionStatus @default(SUBMITTED)
+  status         String                  @default("SUBMITTED")
   createdAt      DateTime                @default(now()) @map("created_at")
   updatedAt      DateTime                @updatedAt @map("updated_at")
 
@@ -510,11 +424,11 @@ model JournalSuggestion {
 }
 
 model JournalSuggestionHistory {
-  id           String                  @id @default(uuid()) 
-  suggestionId String                  
-  status       JournalSuggestionStatus
+  id           String                  @id @default(uuid())
+  suggestionId String
+  status       String
   actionBy     String                  @map("action_by")
-  remarks      String? @db.Text
+  remarks      String?
   createdAt    DateTime                @default(now()) @map("created_at")
 
   suggestion   JournalSuggestion       @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
@@ -524,10 +438,10 @@ model JournalSuggestionHistory {
 }
 
 model Notification {
-  id        String   @id @default(uuid()) 
+  id        String   @id @default(uuid())
   userId    String   @map("user_id")
   title     String
-  message   String @db.Text
+  message   String
   isRead    Boolean  @default(false) @map("is_read")
   createdAt DateTime @default(now()) @map("created_at")
 

@@ -1,5 +1,7 @@
 import { prisma } from "../config/prisma";
-import { LogAction } from "@prisma/client";
+// Enums were removed when the DB moved to SQLite (which has no enum type);
+// these values are stored as plain strings. This union preserves type safety.
+type LogAction = "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT" | "PUBLISH";
 
 /**
  * Record an audit-log entry. Used for security-sensitive actions (logins,

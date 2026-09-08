@@ -3,7 +3,17 @@ import { NotFoundError } from "../../errors/NotFoundError";
 import { BadRequestError } from "../../errors/BadRequestError";
 import { createNotification } from "../../utils/notifications";
 import { logActivity } from "../../utils/logger";
-import { JournalSuggestionStatus } from "@prisma/client";
+// Enums were removed when the DB moved to SQLite (which has no enum type);
+// these values are stored as plain strings. This union preserves type safety.
+type JournalSuggestionStatus =
+  | "SUBMITTED"
+  | "UNDER_EDITOR_REVIEW"
+  | "EDITOR_RECOMMENDED"
+  | "ADMIN_REVIEW"
+  | "CHANGES_REQUESTED"
+  | "APPROVED"
+  | "REJECTED"
+  | "CLOSED";
 
 export class JournalSuggestionService {
   // Create journal suggestion
