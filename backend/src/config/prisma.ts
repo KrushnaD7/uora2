@@ -6,36 +6,50 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /**
- * Build a MariaDB driver adapter from DATABASE_URL.
+ * Build a MariaDB driver adapter for Prisma Client.
  *
- * With the `driverAdapters` + `queryCompiler` preview features enabled in
- * schema.prisma, Prisma Client no longer loads the native Rust query engine.
- * Instead it uses an in-process WASM query compiler plus this pure-JS driver
- * (the `mariadb` package) for the actual connection. That eliminates the
- * engine's Tokio thread pool, which is what crashed with
- * "PANIC: timer has gone away" on Hostinger's process-capped shared hosting.
+ * With `driverAdapters` + `queryCompiler` enabled in schema.prisma, Prisma no
+ * longer loads the native Rust query engine (which crashed with
+ * "PANIC: timer has gone away" on Hostinger's process-capped shared hosting).
+ * It uses an in-process WASM query compiler plus the `mariadb` JS driver.
  *
- * The URL is parsed with the standard URL API (the password is now plain
- * alphanumeric, so no percent-encoding pitfalls) and passed to the adapter as
- * discrete connection options.
+ * CONNECTION METHOD: on Hostinger shared hosting the account's firewall drops
+ * TCP connections to MySQL (127.0.0.1:3306 just hangs), so we connect over the
+ * MySQL Unix socket instead -- the same path phpMyAdmin uses. The socket path
+ * is `/var/lib/mysql/mysql.sock` by default and can be overridden with
+ * DB_SOCKET_PATH. Credentials still come from DATABASE_URL. Set DB_USE_TCP=1
+ * to force TCP (host/port from DATABASE_URL) e.g. for local development.
  */
 const prismaClientSingleton = () => {
   const isProduction = process.env.NODE_ENV === "production";
 
   const url = new URL(process.env.DATABASE_URL as string);
-  const connectionLimit = Number(url.searchParams.get("connection_limit")) || 3;
+  const connectionLimit = Number(url.searchParams.get("connection_limit")) || 2;
 
-  const adapter = new PrismaMariaDb({
-    host: url.hostname,
-    port: url.port ? Number(url.port) : 3306,
+  const common = {
     user: decodeURIComponent(url.username),
     password: decodeURIComponent(url.password),
     database: url.pathname.replace(/^\//, ""),
     connectionLimit,
-    // Keep the connection pool small and let idle connections drop so the
-    // process footprint stays well under the shared-hosting limit.
+    // Fail fast instead of hanging if the connection can't be established.
+    connectTimeout: 10_000,
+    acquireTimeout: 10_000,
     idleTimeout: 60,
-  });
+  };
+
+  const useTcp = process.env.DB_USE_TCP === "1";
+  const socketPath = process.env.DB_SOCKET_PATH || "/var/lib/mysql/mysql.sock";
+
+  const adapter = useTcp
+    ? new PrismaMariaDb({
+        ...common,
+        host: url.hostname,
+        port: url.port ? Number(url.port) : 3306,
+      })
+    : new PrismaMariaDb({
+        ...common,
+        socketPath,
+      });
 
   return new PrismaClient({
     adapter,
