@@ -1,6 +1,13 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-1.1.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+  provider = "prisma-client-js"
+  // queryCompiler + driverAdapters replace the Rust query engine with an
+  // in-process WASM query compiler plus a pure-JS database driver. This
+  // removes the native engine entirely -- no Tokio runtime, no extra OS
+  // threads -- which fixes the "PANIC: timer has gone away" crash on
+  // resource-capped shared hosting (Hostinger's 120-process limit starved
+  // the Rust engine's threads). No binaryTargets are needed without the
+  // engine binary.
+  previewFeatures = ["driverAdapters", "queryCompiler"]
 }
 
 datasource db {
