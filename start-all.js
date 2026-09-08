@@ -97,35 +97,25 @@ try {
 }
 
 // --- Auto-seed: ensure the admin account exists ---
-// Inline seed using the compiled Prisma client and bcrypt from backend/dist,
-// so we don't need tsx at runtime. Idempotent: skips if admin already exists.
-console.log("[server] ensuring admin account...");
-try {
-  const seedResult = execSync(
-    `node -e "` +
-      `const { PrismaClient } = require('@prisma/client');` +
-      `const bcrypt = require('bcrypt');` +
-      `const p = new PrismaClient();` +
-      `const email = process.env.ADMIN_EMAIL || 'admin@uora.com';` +
-      `const pass = process.env.ADMIN_PASSWORD || 'Admin@123';` +
-      `const name = process.env.ADMIN_NAME || 'System Administrator';` +
-      `(async () => {` +
-        `const existing = await p.users.findUnique({ where: { email } });` +
-        `if (existing) { console.log('Admin exists (' + email + '), skipping.'); }` +
-        `else {` +
-          `const h = await bcrypt.hash(pass, 12);` +
-          `await p.users.create({ data: { name, email, password: h, role: 'ADMIN', status: 'ACTIVE', emailVerified: true } });` +
-          `console.log('Admin created: ' + email);` +
-        `}` +
-        `await p.$disconnect();` +
-      `})().catch(e => { console.error(e); process.exit(1); });` +
-    `"`,
-    { cwd: BACKEND_DIR, stdio: "inherit", timeout: 30_000 }
-  );
-  console.log("[server] admin account ready ✓");
-} catch (err) {
-  console.error("[server] seed failed:", err.message);
-  // Non-fatal: the admin can be created later via the bootstrap-admin endpoint.
+// Uses a standalone JS script instead of inline code to avoid shell-escaping
+// issues on Linux. Falls back silently -- the admin can also be created via
+// POST /api/auth/bootstrap-admin with the ADMIN_BOOTSTRAP_SECRET header.
+const seedScript = path.join(BACKEND_DIR, "seed-admin.js");
+if (fs.existsSync(seedScript)) {
+  console.log("[server] ensuring admin account...");
+  try {
+    execSync(`node ${seedScript}`, {
+      cwd: BACKEND_DIR,
+      stdio: "inherit",
+      timeout: 30_000,
+    });
+    console.log("[server] admin account ready ✓");
+  } catch (err) {
+    console.error("[server] seed failed:", err.message);
+  }
+} else {
+  console.log("[server] seed-admin.js not found, skipping admin seed.");
+  console.log("[server] Use POST /api/auth/bootstrap-admin to create admin.");
 }
 
 process.on("uncaughtException", (error) => {
