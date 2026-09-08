@@ -99,11 +99,37 @@ process.on("unhandledRejection", (reason) => {
 // unaffected by this.
 process.chdir(BACKEND_DIR);
 
+// Diagnostic: filled in by the startup DB ping below, exposed at /__dbcheck.
+// Lets us read the exact DB connection error remotely instead of guessing.
+let dbStatus = { checked: false };
+
 async function main() {
   // --- Backend: import the compiled Express app as a request handler ---
   const backendApp = require(path.join(BACKEND_DIR, "dist", "app")).default;
   const { startScheduler } = require(path.join(BACKEND_DIR, "dist", "scheduler"));
   const { prisma } = require(path.join(BACKEND_DIR, "dist", "config", "prisma"));
+
+  // --- DB connectivity check: log the EXACT error so we stop guessing ---
+  // Masks the password but shows the host/user/db actually being used.
+  const rawUrl = process.env.DATABASE_URL || "";
+  const maskedUrl = rawUrl.replace(/:\/\/([^:]+):[^@]*@/, "://$1:***@");
+  console.log("[server] DB check using:", maskedUrl);
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    const users = await prisma.users.count();
+    dbStatus = { checked: true, ok: true, userCount: users, url: maskedUrl };
+    console.log("[server] DB connection OK ✓  users in table:", users);
+  } catch (err) {
+    dbStatus = {
+      checked: true,
+      ok: false,
+      url: maskedUrl,
+      error: String(err && err.message ? err.message : err),
+      code: err && err.code ? err.code : undefined,
+    };
+    console.error("[server] DB CONNECTION FAILED:", dbStatus.error);
+    // Don't exit -- keep the app up so the diagnostic endpoint is reachable.
+  }
 
   // --- Frontend: run Next.js programmatically in this same process ---
   const next = require(path.join(FRONTEND_DIR, "node_modules", "next"));
@@ -118,6 +144,12 @@ async function main() {
 
   const server = http.createServer((req, res) => {
     const url = req.url || "/";
+    // Diagnostic endpoint (handled here, before Express/Next) -- returns the
+    // live DB connectivity result so the exact error can be read remotely.
+    if (url === "/__dbcheck") {
+      res.setHeader("Content-Type", "application/json");
+      return res.end(JSON.stringify(dbStatus));
+    }
     if (url === "/api" || url.startsWith("/api/")) {
       return backendApp(req, res);
     }
