@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -30,12 +29,11 @@ export default function Brand({
           dark ? "bg-white ring-1 ring-white/25" : "bg-white ring-1 ring-line"
         )}
       >
-        <Image
+        <img
           src="/images/uora-mark.png"
           alt=""
-          width={192}
-          height={192}
-          priority
+          width={28}
+          height={28}
           className="size-7 object-contain"
         />
       </span>

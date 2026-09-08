@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { GraduationCap, Mail, Phone, UserRound } from "lucide-react";
 
 import type { Editor } from "./types";
@@ -9,12 +8,11 @@ export default function EditorCard({ editor }: { editor: Editor }) {
       {/* Portrait */}
       <div className="relative shrink-0 overflow-hidden bg-ink-100 sm:w-[42%] lg:w-[38%]">
         {editor.image ? (
-          <Image
+          <img
             src={editor.image}
             alt={`Portrait of ${editor.name}`}
             width={520}
             height={640}
-            sizes="(min-width: 1024px) 240px, (min-width: 640px) 40vw, 100vw"
             className="h-56 w-full scale-[1.14] object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.19] sm:h-full sm:min-h-[22rem]"
           />
         ) : (
