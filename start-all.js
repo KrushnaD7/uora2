@@ -110,26 +110,28 @@ async function main() {
   const { prisma } = require(path.join(BACKEND_DIR, "dist", "config", "prisma"));
 
   // --- DB connectivity check: log the EXACT error so we stop guessing ---
+  // NON-BLOCKING: runs in the background so it can never delay server.listen().
   // Masks the password but shows the host/user/db actually being used.
   const rawUrl = process.env.DATABASE_URL || "";
   const maskedUrl = rawUrl.replace(/:\/\/([^:]+):[^@]*@/, "://$1:***@");
   console.log("[server] DB check using:", maskedUrl);
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    const users = await prisma.users.count();
-    dbStatus = { checked: true, ok: true, userCount: users, url: maskedUrl };
-    console.log("[server] DB connection OK ✓  users in table:", users);
-  } catch (err) {
-    dbStatus = {
-      checked: true,
-      ok: false,
-      url: maskedUrl,
-      error: String(err && err.message ? err.message : err),
-      code: err && err.code ? err.code : undefined,
-    };
-    console.error("[server] DB CONNECTION FAILED:", dbStatus.error);
-    // Don't exit -- keep the app up so the diagnostic endpoint is reachable.
-  }
+  (async () => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      const users = await prisma.users.count();
+      dbStatus = { checked: true, ok: true, userCount: users, url: maskedUrl };
+      console.log("[server] DB connection OK ✓  users in table:", users);
+    } catch (err) {
+      dbStatus = {
+        checked: true,
+        ok: false,
+        url: maskedUrl,
+        error: String(err && err.message ? err.message : err),
+        code: err && err.code ? err.code : undefined,
+      };
+      console.error("[server] DB CONNECTION FAILED:", dbStatus.error);
+    }
+  })();
 
   // --- Frontend: run Next.js programmatically in this same process ---
   const next = require(path.join(FRONTEND_DIR, "node_modules", "next"));
