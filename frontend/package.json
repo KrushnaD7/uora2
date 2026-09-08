@@ -2,6 +2,9 @@
   "name": "uora-publications",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",

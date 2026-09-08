@@ -20,6 +20,29 @@
 process.stdout.write("=== UORA server starting (start-all.js) ===\n");
 process.stdout.write("Node: " + process.version + " | CWD: " + process.cwd() + "\n");
 
+// --- Node version guard -----------------------------------------------------
+// The Prisma query engine (v6) supports Node <= 22. On Node 23/24 it panics
+// with "PANIC: timer has gone away" on the FIRST query, which the app then
+// surfaces as generic "Invalid email or password" / "Registration failed".
+// This app is pinned to Node 20 (package.json engines + .nvmrc). If the host
+// still runs a newer major, shout about it in the logs so it's unmistakable.
+{
+  const major = Number(process.versions.node.split(".")[0]);
+  if (major > 22) {
+    process.stdout.write(
+      "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
+        "[server] WARNING: Node " + process.version + " detected.\n" +
+        "[server] Prisma 6 requires Node <= 22. Node " + major + " causes the\n" +
+        "[server] 'timer has gone away' engine panic and breaks ALL database\n" +
+        "[server] queries. Set the Node version to 20.x in hPanel -> Deploy\n" +
+        "[server] Web App settings, then redeploy.\n" +
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n"
+    );
+  } else {
+    process.stdout.write("[server] Node major " + major + " is Prisma-compatible ✓\n");
+  }
+}
+
 // Set BEFORE any other require() -- libuv reads this the first time its
 // threadpool is actually used (fs, crypto, zlib, dns.lookup -- also what
 // Prisma's native query-engine addon rides on).

@@ -17,6 +17,6 @@
     "prisma:seed": "npm --prefix backend run prisma:seed"
   },
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   }
 }
