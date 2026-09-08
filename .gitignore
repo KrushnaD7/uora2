@@ -17,3 +17,4 @@ schema_dump.sql
 backend/migration/
 .env.production
 .env*.local
+hostinger.env

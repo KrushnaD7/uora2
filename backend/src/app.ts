@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
-import { corsOrigins, env } from "./config/env";
+import { env, isOriginAllowed } from "./config/env";
 import { requestIdMiddleware } from "./middlewares/requestId";
 import {
   generalLimiter,
@@ -114,7 +114,7 @@ app.use(
     origin(origin, callback) {
       // Allow requests with no origin (server-to-server, curl, mobile).
       if (!origin) return callback(null, true);
-      if (corsOrigins.includes(origin)) return callback(null, true);
+      if (isOriginAllowed(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,

@@ -23,9 +23,9 @@ export const contactInfo: ContactInfo[] = [
     id: 2,
     title: "Office address",
     value:
-      "E-1/8 Mathura Nagar, N-6, Cidco, Chhatrapati Sambhajinagar, Maharashtra 431003, India",
+      "Dr. Babasaheb Ambedkar Marathwada University Road, Towards, Bibi ka Maqbara Rd, Chhatrapati Sambhajinagar, Maharashtra 431001",
     icon: MapPin,
-    href: "https://maps.google.com/?q=E-1/8+Mathura+Nagar+N-6+Cidco+Chhatrapati+Sambhajinagar+Maharashtra+431003",
+    href: "https://maps.google.com/?q=Dr.+Babasaheb+Ambedkar+Marathwada+University+Road+Bibi+ka+Maqbara+Rd+Chhatrapati+Sambhajinagar+Maharashtra+431001",
   },
   {
     id: 3,

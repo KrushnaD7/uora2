@@ -73,7 +73,7 @@ repo root has the same list with more detail per variable.
 | `REFRESH_EXPIRES_DAYS` | no       | `14`                                                         |
 | `FRONTEND_URL`         | yes      | `https://uorapublications.com`                               |
 | `CORS_ORIGINS`         | yes      | `https://uorapublications.com,https://www.uorapublications.com` |
-| `ROOT_DOMAIN`          | no       | `uorapublications.com` — only needed if it differs from the built-in default; powers per-journal subdomain routing |
+| `ROOT_DOMAIN`          | no       | `uorapublications.com` — only needed if it differs from the built-in default; powers per-journal subdomain routing (frontend rewrite) **and** lets the backend accept CORS requests from any journal subdomain automatically, without listing each one in `CORS_ORIGINS` |
 | `ADMIN_EMAIL`          | for seed | initial admin email                                          |
 | `ADMIN_PASSWORD`       | for seed | initial admin password (strong!)                             |
 | `ADMIN_NAME`           | for seed | admin display name                                           |

@@ -122,7 +122,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                   </Badge>
                 </div>
 
-                <h1 className="font-display mt-6 text-display-sm font-semibold leading-tight text-navy-950 sm:text-display-md">
+                <h1 className="font-display mt-6 text-display-sm font-semibold leading-tight text-navy-950 sm:text-display-md break-words [overflow-wrap:anywhere]">
                   {article.title}
                 </h1>
 
@@ -148,7 +148,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 {article.submission?.abstract ? (
                   <div>
                     <h2 className="font-display text-xl font-semibold text-navy-950">Abstract</h2>
-                    <p className="mt-3 leading-8 text-ink-600">
+                    <p className="mt-3 leading-8 text-ink-600 break-words [overflow-wrap:anywhere]">
                       {article.submission.abstract}
                     </p>
                   </div>
@@ -199,6 +199,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                   downloadUrl={downloadUrl}
                   viewUrl={viewUrl}
                   hasPdf={hasPdf}
+                  fileUrl={article.pdfUrl}
                 />
               </div>
 

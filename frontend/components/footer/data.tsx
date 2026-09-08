@@ -25,9 +25,9 @@ export const authorLinks: FooterLink[] = [
 ];
 
 export const contactLines = [
-  "E-1/8 Mathura Nagar, N-6, CIDCO",
-  "Chhatrapati Sambhajinagar",
-  "Maharashtra 431003, India",
+  "Dr. Babasaheb Ambedkar Marathwada University Road, Towards,",
+  "Bibi ka Maqbara Rd, Chhatrapati Sambhajinagar",
+  "Maharashtra 431001",
 ];
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;

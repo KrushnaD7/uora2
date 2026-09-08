@@ -330,16 +330,16 @@ export default function JournalWorkspacePage({ params }: { params: Promise<{ id:
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       key={article.id} 
-                      className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex justify-between items-center group"
+                      className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex justify-between items-center gap-4 group"
                     >
-                      <div>
-                        <h4 className="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#0B8A83] transition-colors">
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-slate-800 text-lg leading-tight group-hover:text-[#0B8A83] transition-colors break-words line-clamp-2">
                           {article.title}
                         </h4>
-                        <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-slate-500">
                           {article.doi && (
-                            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
-                              <FileLock2 size={12} /> DOI: {article.doi}
+                            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md truncate max-w-full">
+                              <FileLock2 size={12} className="shrink-0" /> DOI: {article.doi}
                             </span>
                           )}
                           {article.pages && <span>Pages: {article.pages}</span>}
@@ -350,23 +350,25 @@ export default function JournalWorkspacePage({ params }: { params: Promise<{ id:
                       </div>
                       {article.pdfUrl && (
                         <div className="flex items-center gap-2 shrink-0">
-                          <a
-                            href={`${API_URL}/public/articles/${article.id}/download?view=1`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 border border-slate-100 hover:border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-colors"
-                            title="View PDF"
-                          >
-                            <Eye size={14} /> View PDF
-                          </a>
+                          {article.pdfUrl.toLowerCase().endsWith(".pdf") ? (
+                            <a
+                              href={`${API_URL}/public/articles/${article.id}/download?view=1`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 border border-slate-100 hover:border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-colors"
+                              title="View PDF"
+                            >
+                              <Eye size={14} /> View
+                            </a>
+                          ) : null}
                           <a
                             href={`${API_URL}/public/articles/${article.id}/download`}
                             target="_blank"
                             rel="noreferrer"
                             className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 border border-slate-100 hover:border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-colors"
-                            title="Download PDF"
+                            title="Download"
                           >
-                            <Download size={14} /> PDF
+                            <Download size={14} /> Download
                           </a>
                         </div>
                       )}
@@ -387,9 +389,9 @@ export default function JournalWorkspacePage({ params }: { params: Promise<{ id:
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden"
             >
-              <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 shrink-0">
                 <h2 className="text-xl font-bold text-slate-900">
                   {activeModal === "VOLUME" && "Create New Volume"}
                   {activeModal === "ISSUE" && "Create New Issue"}
@@ -400,7 +402,7 @@ export default function JournalWorkspacePage({ params }: { params: Promise<{ id:
                 </button>
               </div>
 
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto">
                 {activeModal === "VOLUME" && (
                   <form onSubmit={handleCreateVolume} className="space-y-4">
                     <div>

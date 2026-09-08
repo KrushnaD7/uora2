@@ -57,7 +57,7 @@ async function main() {
             ethics: "UJGSM is committed to maintaining the highest ethical standards of publishing. All manuscripts undergo a double-blind peer-review process, ensuring fairness, transparency, and scientific integrity. We adhere to standard editorial and publishing ethics guidelines.",
             contactEmail: "contact@uorapublications.com",
             contactPhone: "+91 9766930707",
-            address: "E-1/8 Mathura Nagar, N-6, Cidco, Chhatrapati Sambhajinagar, Maharashtra 431003, India"
+            address: "Dr. Babasaheb Ambedkar Marathwada University Road, Towards, Bibi ka Maqbara Rd, Chhatrapati Sambhajinagar, Maharashtra 431001"
           }
         }
       }

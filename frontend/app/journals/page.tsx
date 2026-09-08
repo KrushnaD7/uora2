@@ -4,6 +4,7 @@ import Eyebrow from "@/components/ui/Eyebrow";
 import Reveal from "@/components/ui/Reveal";
 import Badge from "@/components/ui/Badge";
 import JournalCard from "@/components/journals/JournalCard";
+import PublicLayout from "@/components/layout/PublicLayout";
 import type { Journal } from "@/components/journals/types";
 import type { JournalModel } from "@/lib/api/journals";
 import { toJournal } from "@/components/journals/toJournal";
@@ -16,7 +17,7 @@ export default async function JournalsPage() {
   const journals = (res.data ?? []).map((j, i) => toJournal(j, i)) as Journal[];
 
   return (
-    <>
+    <PublicLayout>
       <section className="relative isolate overflow-hidden border-b border-line bg-canvas pt-32 pb-16 sm:pt-36 lg:pt-40 lg:pb-20">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-grid opacity-60 mask-radial-fade" />
@@ -71,6 +72,6 @@ export default async function JournalsPage() {
           )}
         </Container>
       </section>
-    </>
+    </PublicLayout>
   );
 }

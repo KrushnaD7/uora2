@@ -107,14 +107,14 @@ export default function AuthorDashboard() {
           ) : (
             <div className="divide-y divide-slate-100">
               {recent.map((sub) => (
-                <div key={sub.id} className="py-4 flex justify-between items-center first:pt-0 last:pb-0">
-                  <div className="space-y-1">
-                    <p className="font-semibold text-slate-900">{sub.title}</p>
+                <div key={sub.id} className="py-4 flex justify-between items-center gap-4 first:pt-0 last:pb-0">
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{sub.title}</p>
                     <p className="text-xs text-slate-500">
                       ID: {sub.paperId} • Journal: {sub.journal.shortName} • Created: {new Date(sub.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div>
+                  <div className="shrink-0">
                     <span className={getStatusBadgeClass(sub.status)}>{sub.status}</span>
                   </div>
                 </div>

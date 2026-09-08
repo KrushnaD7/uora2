@@ -321,22 +321,35 @@ export const downloadArticlePDF = catchAsync(
       return res.status(404).json({
         success: false,
         message:
-          "PDF file not found"
+          "File not found"
       });
     }
 
+    // Detect the actual file type from the stored file extension
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes: Record<string, string> = {
+      ".pdf": "application/pdf",
+      ".doc": "application/msword",
+      ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    };
+    const contentType = mimeTypes[ext] || "application/octet-stream";
+    const downloadExt = ext || ".pdf";
+    const isPdf = ext === ".pdf";
 
     // Inline view (render inside the browser)
     if (req.query.view === "1") {
 
       res.setHeader(
         "Content-Type",
-        "application/pdf"
+        contentType
       );
 
+      // PDFs can render inline; DOC/DOCX must be downloaded
       res.setHeader(
         "Content-Disposition",
-        `inline; filename="${article.title}.pdf"`
+        isPdf
+          ? `inline; filename="${article.title}${downloadExt}"`
+          : `attachment; filename="${article.title}${downloadExt}"`
       );
 
       return res.sendFile(
@@ -350,7 +363,7 @@ export const downloadArticlePDF = catchAsync(
 
       filePath,
 
-      `${article.title}.pdf`
+      `${article.title}${downloadExt}`
 
     );
 

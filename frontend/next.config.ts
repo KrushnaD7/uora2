@@ -89,6 +89,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Fewer, larger client chunks instead of Next's default fine-grained
+  // splitting -- each page load fires off far fewer parallel
+  // `_next/static/chunks/*.js` requests, which reduces exposure to any
+  // per-connection/concurrency limits or edge-cache quirks on constrained
+  // shared hosting (e.g. a handful of chunks intermittently 503ing while
+  // most others succeed). A larger minSize means small modules get merged
+  // into a shared chunk instead of each becoming its own tiny request.
+  webpack: (config, { isServer }) => {
+    if (!isServer && config.optimization?.splitChunks) {
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        minSize: 100000,
+        maxInitialRequests: 6,
+        maxAsyncRequests: 6,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

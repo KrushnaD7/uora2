@@ -95,14 +95,14 @@ export default function AdminDashboard() {
           ) : (
             <div className="divide-y divide-slate-100">
               {recentSubmissions.map((sub: any) => (
-                <div key={sub.id} className="py-4 flex justify-between items-center first:pt-0 last:pb-0">
-                  <div className="space-y-1">
-                    <p className="font-semibold text-slate-900">{sub.title}</p>
-                    <p className="text-xs text-slate-500">
+                <div key={sub.id} className="py-4 flex justify-between items-center gap-4 first:pt-0 last:pb-0">
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{sub.title}</p>
+                    <p className="text-xs text-slate-500 truncate">
                       ID: {sub.paperId} • Journal: {sub.journal?.name} • Created: {new Date(sub.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div>
+                  <div className="shrink-0">
                     <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">{sub.status}</span>
                   </div>
                 </div>
@@ -131,14 +131,14 @@ export default function AdminDashboard() {
           ) : (
             <div className="divide-y divide-slate-100">
               {rejectedSubmissions.map((sub: any) => (
-                <div key={sub.id} className="py-4 flex justify-between items-center first:pt-0 last:pb-0">
-                  <div className="space-y-1">
-                    <p className="font-semibold text-slate-900">{sub.title}</p>
-                    <p className="text-xs text-slate-500">
+                <div key={sub.id} className="py-4 flex justify-between items-center gap-4 first:pt-0 last:pb-0">
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{sub.title}</p>
+                    <p className="text-xs text-slate-500 truncate">
                       ID: {sub.paperId} • Journal: {sub.journal?.name} • Updated: {new Date(sub.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div>
+                  <div className="shrink-0">
                     <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">{sub.status}</span>
                   </div>
                 </div>

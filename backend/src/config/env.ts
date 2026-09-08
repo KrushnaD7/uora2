@@ -101,3 +101,29 @@ const allowedOrigins: string[] = (process.env.CORS_ORIGINS || "")
 
 export const corsOrigins =
   allowedOrigins.length > 0 ? allowedOrigins : [env.FRONTEND_URL];
+
+// Every journal can be published on its own subdomain of ROOT_DOMAIN (e.g.
+// jar.uorapublications.com) -- see frontend/proxy.ts, which rewrites those
+// requests to the matching /journals/[slug] pages. Journals are created
+// dynamically by admins, so their subdomains can't be enumerated up front
+// in CORS_ORIGINS. Because the frontend and API share one origin per request
+// (start-all.js), a same-origin fetch from a journal subdomain still carries
+// an Origin header for non-GET requests -- without this, the exact-match
+// CORS_ORIGINS list above would silently reject every login/submission POST
+// made from a journal subdomain. This default mirrors frontend/proxy.ts's
+// own ROOT_DOMAIN fallback so both stay in sync without extra config.
+export const ROOT_DOMAIN = (
+  process.env.ROOT_DOMAIN || "uorapublications.com"
+).toLowerCase();
+
+export function isOriginAllowed(origin: string): boolean {
+  if (corsOrigins.includes(origin)) return true;
+
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "https:" && protocol !== "http:") return false;
+    return hostname.toLowerCase().endsWith(`.${ROOT_DOMAIN}`);
+  } catch {
+    return false;
+  }
+}
