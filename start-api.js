@@ -273,34 +273,51 @@ async function main() {
   // /__dbcheck readable) whatever the database is doing. The timeout turns a
   // hang into a reported error instead of silence.
   const DB_INIT_TIMEOUT_MS = 20000;
+  const attemptInit = async () => {
+    await Promise.race([
+      (async () => {
+        await initializeDatabase();
+        const users = await prisma.users.count();
+        dbStatus = { checked: true, ok: true, userCount: users, location: dbLocationReport, steps: initSteps };
+        console.log("[api] database ready, users:", users);
+      })(),
+      new Promise((_resolve, reject) =>
+        setTimeout(
+          () => reject(new Error("database init timed out after " + DB_INIT_TIMEOUT_MS + "ms")),
+          DB_INIT_TIMEOUT_MS
+        )
+      ),
+    ]);
+  };
+
+  // Retry the init a few times before giving up. The usual cause of an early
+  // failure is a redeploy: the previous instance's MySQL connections linger
+  // for a moment and fill the user's connection quota, so the new pool can't
+  // connect. Those connections drop within a minute or two, so retrying lets
+  // the app recover on its own instead of needing a manual "stop processes".
   const initDatabase = async () => {
-    try {
-      await Promise.race([
-        (async () => {
-          await initializeDatabase();
-          const users = await prisma.users.count();
-          dbStatus = { checked: true, ok: true, userCount: users, location: dbLocationReport, steps: initSteps };
-          console.log("[api] database ready, users:", users);
-        })(),
-        new Promise((_resolve, reject) =>
-          setTimeout(
-            () => reject(new Error("database init timed out after " + DB_INIT_TIMEOUT_MS + "ms")),
-            DB_INIT_TIMEOUT_MS
-          )
-        ),
-      ]);
-    } catch (err) {
-      dbStatus = {
-        checked: true,
-        ok: false,
-        error: String(err && err.message ? err.message : err),
-        stack: err && err.stack ? String(err.stack).slice(0, 400) : undefined,
-        // Which step it reached tells us what actually stalled.
-        location: dbLocationReport,
-        steps: initSteps,
-      };
-      console.error("[api] DATABASE INIT FAILED:", dbStatus.error);
+    const MAX_ATTEMPTS = 6;
+    const RETRY_DELAY_MS = 15000;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        await attemptInit();
+        return;
+      } catch (err) {
+        dbStatus = {
+          checked: true,
+          ok: false,
+          attempt,
+          error: String(err && err.message ? err.message : err),
+          location: dbLocationReport,
+          steps: initSteps,
+        };
+        console.error(`[api] DATABASE INIT attempt ${attempt}/${MAX_ATTEMPTS} FAILED:`, dbStatus.error);
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+        }
+      }
     }
+    console.error("[api] database init gave up after", MAX_ATTEMPTS, "attempts");
   };
 
   const server = http.createServer((req, res) => {

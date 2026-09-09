@@ -27,10 +27,15 @@ export interface DbConnection {
  */
 export function resolveDbConnection(): DbConnection {
   const url = new URL(process.env.DATABASE_URL as string);
-  const connectionLimit =
+  // Keep the pool small. Hostinger's shared MySQL caps concurrent connections
+  // per user, and during a redeploy the old instance's connections briefly
+  // overlap with the new one's -- a large pool makes that overlap exhaust the
+  // quota and hang. 2 is plenty for this traffic.
+  const requested =
     Number(url.searchParams.get("connection_limit")) ||
     Number(process.env.DB_CONNECTION_LIMIT) ||
-    3;
+    2;
+  const connectionLimit = Math.min(requested, 2);
 
   const common = {
     user: decodeURIComponent(url.username),
