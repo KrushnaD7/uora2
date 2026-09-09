@@ -1,12 +1,12 @@
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api/client";
 import { 
   ArrowLeft, Plus, Book, FileText, LayoutTemplate, 
   X, CheckCircle2, ChevronRight, AlertCircle, FileLock2, Globe, FileIcon, Eye, Download
 } from "lucide-react";
-import { Link } from "@/lib/nav";
+import { Link, useParams } from "@/lib/nav";
 
 const API_URL = "/api";
 
@@ -41,9 +41,8 @@ interface Journal {
   shortName: string;
 }
 
-export default function JournalWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = use(params);
-  const { id: journalId } = unwrappedParams;
+export default function JournalWorkspacePage() {
+  const { id: journalId = "" } = useParams<{ id: string }>();
 
   const [journal, setJournal] = useState<Journal | null>(null);
   const [volumes, setVolumes] = useState<Volume[]>([]);
