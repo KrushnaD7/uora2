@@ -23,17 +23,22 @@ export class VolumeRepository {
     });
   }
 
+  /**
+   * Full volume tree for a journal, used by the admin workspace.
+   *
+   * Deliberately UNFILTERED: this is the editorial view, so it must include
+   * UPCOMING issues and not-yet-published articles. Filtering to published
+   * records here made newly created issues invisible in the workspace -- the
+   * issue saved fine, the UI never showed it, and creating it again failed
+   * with a confusing "already exists". Public pages read published-only data
+   * through the separate `public` module instead.
+   */
   findByJournalId(journalId: string) {
     return prisma.volume.findMany({
       where: { journalId },
       include: {
         issues: {
-          where: { status: "PUBLISHED" },
-          include: {
-            articles: {
-              where: { publishedAt: { not: null } }
-            }
-          },
+          include: { articles: true },
           orderBy: { issueNumber: 'asc' }
         }
       },
