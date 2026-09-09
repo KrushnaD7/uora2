@@ -54,6 +54,7 @@ export default function JournalWorkspacePage() {
   const [activeModal, setActiveModal] = useState<"VOLUME" | "ISSUE" | "ARTICLE" | null>(null);
   const [modalTargetId, setModalTargetId] = useState<string | null>(null); // For VolumeId or IssueId
   const [modalLoading, setModalLoading] = useState(false);
+  const [publishingIssueId, setPublishingIssueId] = useState<string | null>(null);
 
   // Form States
   const [volumeForm, setVolumeForm] = useState({ year: new Date().getFullYear(), volumeNumber: 1 });
@@ -161,6 +162,32 @@ export default function JournalWorkspacePage() {
       alert(err.message || "Error creating issue");
     } finally {
       setModalLoading(false);
+    }
+  };
+
+  /**
+   * Publish an issue.
+   *
+   * Public pages only list PUBLISHED issues, so an issue left as UPCOMING
+   * keeps its articles hidden no matter how many are added to it. This is the
+   * step that actually makes an issue and its contents visible on the site.
+   */
+  const handlePublishIssue = async (issueId: string, issueNumber: number) => {
+    if (
+      !confirm(
+        `Publish Issue ${issueNumber}? Its published articles become visible on the public site.`
+      )
+    ) {
+      return;
+    }
+    setPublishingIssueId(issueId);
+    try {
+      await api.patch(`/issues/${issueId}/publish`, {});
+      fetchData();
+    } catch (err: any) {
+      alert(err.message || "Error publishing issue");
+    } finally {
+      setPublishingIssueId(null);
     }
   };
 
@@ -307,13 +334,35 @@ export default function JournalWorkspacePage() {
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900">Articles in Issue {selectedIssue?.issueNumber}</h2>
                   <p className="text-slate-500 mt-1">{selectedIssue?.articles?.length || 0} Published Articles</p>
+                  {selectedIssue?.status === "UPCOMING" && (
+                    <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-700">
+                      <AlertCircle size={14} className="mt-px shrink-0" />
+                      This issue is not published, so its articles are hidden from the public site.
+                    </p>
+                  )}
                 </div>
-                <button
-                  onClick={() => openArticleModal(selectedIssueId)}
-                  className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
-                >
-                  <Plus size={16} /> Add Article
-                </button>
+                <div className="flex items-center gap-2">
+                  {selectedIssue?.status === "UPCOMING" ? (
+                    <button
+                      onClick={() => handlePublishIssue(selectedIssue.id, selectedIssue.issueNumber)}
+                      disabled={publishingIssueId === selectedIssue?.id}
+                      className="flex items-center gap-2 bg-[#0B8A83] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#0a7a74] transition-colors disabled:opacity-60"
+                    >
+                      <Globe size={16} />
+                      {publishingIssueId === selectedIssue?.id ? "Publishing..." : "Publish Issue"}
+                    </button>
+                  ) : (
+                    <span className="flex items-center gap-1.5 rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-700">
+                      <CheckCircle2 size={16} /> Published
+                    </span>
+                  )}
+                  <button
+                    onClick={() => openArticleModal(selectedIssueId)}
+                    className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
+                  >
+                    <Plus size={16} /> Add Article
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">
