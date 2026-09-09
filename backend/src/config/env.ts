@@ -59,7 +59,12 @@ export const env = {
   FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:3000",
 
   // Directory where uploaded files are stored privately (never served statically).
-  uploadsDir: path.join(process.cwd(), "uploads"),
+  // MUST be outside the deploy directory, which Hostinger's Web App replaces on
+  // every redeploy (that would delete every uploaded PDF). Defaults to a
+  // persistent folder under the account home; override with UPLOADS_DIR.
+  uploadsDir:
+    process.env.UPLOADS_DIR ||
+    path.join(process.env.HOME || process.cwd(), "uora-data", "uploads"),
 
   // ---------------------------------------------------------------------------
   // Email / SMTP  (optional — server starts without these; email is disabled)
