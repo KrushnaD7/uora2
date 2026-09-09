@@ -81,7 +81,7 @@ export default function JournalDetailPage() {
             <h1 className="font-display mt-4 text-display-sm font-semibold text-navy-950 sm:text-display-md lg:text-display-lg">
               {journal.name}
             </h1>
-            <p className="mt-6 max-w-3xl text-[17px] leading-8 text-ink-600">
+            <p className="mt-6 max-w-3xl whitespace-pre-line text-[17px] leading-8 text-ink-600">
               {journal.settings?.about || "Universal peer-reviewed academic journal published by UORA Publications."}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -102,14 +102,14 @@ export default function JournalDetailPage() {
             <div className="space-y-10 lg:col-span-2">
               <article id="scope" className="rounded-2xl border border-line bg-white p-8 shadow-sm sm:p-10">
                 <h2 className="font-display text-2xl font-semibold text-navy-950">Aims &amp; Scope</h2>
-                <p className="mt-5 leading-8 text-ink-600">
+                <p className="mt-5 whitespace-pre-line leading-8 text-ink-600">
                   {journal.settings?.aimsScope || "This journal covers research and developments in multi-disciplinary areas. It aims to publish original research articles, reviews, case studies, and technical notes that make significant contributions to the field."}
                 </p>
               </article>
 
               <article className="rounded-2xl border border-line bg-white p-8 shadow-sm sm:p-10">
                 <h2 className="font-display text-2xl font-semibold text-navy-950">Publication Ethics</h2>
-                <p className="mt-5 leading-8 text-ink-600">
+                <p className="mt-5 whitespace-pre-line leading-8 text-ink-600">
                   {journal.settings?.ethics || "UORA Publications is committed to maintaining the highest ethical standards of publishing. All manuscripts undergo a double-blind peer-review process, ensuring fairness, transparency, and scientific integrity."}
                 </p>
               </article>
