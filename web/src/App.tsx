@@ -1,8 +1,9 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { PageSpinner } from "@/components/ui/PageLoading";
 import ScrollToTop from "@/lib/ScrollToTop";
+import { getJournalSubdomain } from "@/lib/subdomain";
 
 // Role shells. The ported layouts still take `children`, so each is adapted to
 // a nested route by feeding it an <Outlet /> -- their markup is untouched.
@@ -65,7 +66,41 @@ const ReviewerDashboardPage = lazy(() => import("@/pages/reviewer/dashboard/page
 const ReviewerPendingPage = lazy(() => import("@/pages/reviewer/pending/page"));
 const ReviewerProfilePage = lazy(() => import("@/pages/reviewer/profile/page"));
 
+// On a journal subdomain (e.g. ujhss.uorapublications.com) the whole site is
+// that one journal: its pages are mounted at the root, and the journal slug
+// comes from the hostname (see useJournalSlug). Auth pages stay reachable so
+// authors can still log in / apply from a journal's own address; anything else
+// falls back to the journal home.
+function JournalSubdomainApp() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <ScrollToTop />
+        <Suspense fallback={<PageSpinner />}>
+          <Routes>
+            <Route path="/" element={<JournalsSlugPage />} />
+            <Route path="/archives" element={<JournalsSlugArchivesPage />} />
+            <Route path="/ethics" element={<JournalsSlugEthicsPage />} />
+            <Route path="/guidelines" element={<JournalsSlugGuidelinesPage />} />
+            <Route path="/peer-review" element={<JournalsSlugPeerreviewPage />} />
+            <Route path="/volumes/:volumeId" element={<JournalsSlugVolumesVolumeidPage />} />
+            <Route path="/volumes/:volumeId/issues/:issueId" element={<JournalsSlugVolumesVolumeidIssuesIssueidPage />} />
+            <Route path="/articles/:id" element={<ArticlesIdPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/apply" element={<ApplyPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
 export default function App() {
+  // A journal subdomain gets its own scoped route tree.
+  if (getJournalSubdomain()) return <JournalSubdomainApp />;
+
   return (
     <BrowserRouter>
       <AuthProvider>

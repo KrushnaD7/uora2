@@ -25,3 +25,6 @@ hostinger.env
 
 # Fallback database location (used only when the persistent path is unusable)
 data/
+
+# Source journal documents (content already imported to the DB)
+*.docx

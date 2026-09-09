@@ -1,4 +1,5 @@
 import { Link, useParams } from "@/lib/nav";
+import { useJournalSlug } from "@/lib/useJournalSlug";
 import { ArrowLeft, BookOpen, FileText, ShieldCheck } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Eyebrow from "@/components/ui/Eyebrow";
@@ -10,7 +11,7 @@ import { useAsyncData } from "@/lib/useAsyncData";
 import PageLoading from "@/components/ui/PageLoading";
 
 export default function JournalGuidelinesPage() {
-  const { slug = "" } = useParams<{ slug: string }>();
+  const slug = useJournalSlug();
   const { data: res, loading } = useAsyncData(
     () => serverGetPublicJournalBySlug<JournalModel>(slug),
     [slug]

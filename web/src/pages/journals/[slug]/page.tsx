@@ -1,4 +1,5 @@
 import { Link, useParams } from "@/lib/nav";
+import { useJournalSlug } from "@/lib/useJournalSlug";
 import {
   ArrowLeft,
   BookOpen,
@@ -19,7 +20,7 @@ import { useAsyncData } from "@/lib/useAsyncData";
 import PageLoading from "@/components/ui/PageLoading";
 
 export default function JournalDetailPage() {
-  const { slug = "" } = useParams<{ slug: string }>();
+  const slug = useJournalSlug();
   const { data: res, loading } = useAsyncData(
     () => serverGetPublicJournalBySlug<JournalModel>(slug),
     [slug]

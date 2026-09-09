@@ -1,4 +1,5 @@
 import { Link, useParams } from "@/lib/nav";
+import { useJournalSlug } from "@/lib/useJournalSlug";
 import {
   ArrowLeft,
   BookOpen,
@@ -15,7 +16,8 @@ import { useAsyncData } from "@/lib/useAsyncData";
 import PageLoading from "@/components/ui/PageLoading";
 
 export default function VolumeDetailPage() {
-  const { slug = "", volumeId = "" } = useParams<{ slug: string; volumeId: string }>();
+  const { volumeId = "" } = useParams<{ volumeId: string }>();
+  const slug = useJournalSlug();
   const { data: res, loading } = useAsyncData(
     () => serverGetPublicVolumeById<VolumeModel>(volumeId),
     [volumeId]

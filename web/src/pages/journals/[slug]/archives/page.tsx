@@ -1,4 +1,5 @@
 import { Link, useParams } from "@/lib/nav";
+import { useJournalSlug } from "@/lib/useJournalSlug";
 import { ArrowLeft, Archive } from "lucide-react";
 
 import Container from "@/components/ui/Container";
@@ -14,7 +15,7 @@ import { useAsyncData } from "@/lib/useAsyncData";
 import PageLoading from "@/components/ui/PageLoading";
 
 export default function JournalArchivesPage() {
-  const { slug = "" } = useParams<{ slug: string }>();
+  const slug = useJournalSlug();
   const { data: res, loading } = useAsyncData(
     () => serverGetPublicJournalBySlug<JournalModel>(slug),
     [slug]
