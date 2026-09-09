@@ -4,6 +4,7 @@ import fs from "fs";
 
 import { catchAsync } from "../../shared/catchAsync";
 import { PublicService } from "./public.service";
+import { resolveUploadPath } from "../../utils/file";
 
 
 const publicService = new PublicService();
@@ -296,26 +297,22 @@ export const downloadArticlePDF = catchAsync(
 
 
     /**
-     * pdfUrl examples:
-     *   /uploads/filename.pdf          (from submission manuscript)
-     *   /uploads/articles/filename.pdf (legacy/imported articles)
+     * pdfUrl is stored as a public-looking path, e.g. /uploads/filename.pdf.
      *
-     * Strip /uploads prefix and resolve against the uploads directory.
+     * Resolve it with the shared helper rather than joining against the
+     * working directory: uploads live in a configured directory outside the
+     * deployment (so redeploys don't delete them), and the helper also keeps
+     * the result inside that directory.
      */
-    const cleanPath =
-      article.pdfUrl.replace(
-        /^\/uploads/,
-        ""
-      );
-
-    const filePath =
-      path.join(
-        process.cwd(),
-        "uploads",
-        cleanPath
-      );
-
-
+    let filePath: string;
+    try {
+      filePath = resolveUploadPath(article.pdfUrl);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        message: "File not found"
+      });
+    }
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({
