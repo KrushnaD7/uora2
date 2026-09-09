@@ -4,7 +4,7 @@
   "private": true,
   "description": "UORA Publications — international academic publishing platform (React SPA + Express API).",
   "scripts": {
-    "install:all": "npm --prefix backend install && npm --prefix web install",
+    "install:all": "npm --prefix backend install --include=dev && npm --prefix web install --include=dev",
     "build": "npm run install:all && npm --prefix backend run build && npm --prefix web run build",
     "start": "node start-api.js",
     "dev:api": "node start-api.js",
