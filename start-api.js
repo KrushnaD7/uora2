@@ -2,9 +2,11 @@
 // UORA API server -- Hostinger Node.js Web App entry point
 // ============================================================
 //
-// API-ONLY. Unlike the old start-all.js, this does NOT run Next.js in the
-// same process. The frontend is now a static React build served directly by
-// the web server, so this process only has to run the Express API.
+// Serves the Express API plus the pre-built React SPA as static files.
+// Unlike the old start-all.js there is NO server-side rendering here: the
+// frontend was built ahead of time by Vite, so requests for it are just file
+// reads. Keeping both on one origin also means the browser calls /api
+// same-origin, so no CORS setup is needed.
 //
 // That is the whole point of the rebuild: Next.js server-side rendering was
 // what pushed the account past Hostinger's 120-process cap and left the app
@@ -29,6 +31,7 @@ const path = require("path");
 const PORT = Number(process.env.PORT) || 3000;
 const HOSTNAME = "0.0.0.0";
 const BACKEND_DIR = path.join(__dirname, "backend");
+const WEB_DIST = process.env.WEB_DIST || path.join(__dirname, "web", "dist");
 
 // --- Startup guard: the compiled backend must exist ---
 const APP_JS = path.join(BACKEND_DIR, "dist", "app.js");
@@ -38,6 +41,16 @@ if (!fs.existsSync(APP_JS)) {
   process.exit(1);
 }
 console.log("[api] build artifact verified ✓");
+
+// The SPA is optional at boot: the API is still useful without it, and saying
+// so plainly beats serving a blank page with no explanation.
+const HAS_WEB = fs.existsSync(path.join(WEB_DIST, "index.html"));
+if (HAS_WEB) {
+  console.log("[api] serving SPA from:", WEB_DIST);
+} else {
+  console.warn("[api] NO SPA BUILD at", WEB_DIST, "-- serving API only.");
+  console.warn("[api] Run `npm --prefix web run build` (the root build does this).");
+}
 
 // --- Env-var guard: fail loudly and immediately, not deep inside a require ---
 const missingEnv = ["DATABASE_URL", "JWT_SECRET"].filter(
@@ -63,6 +76,86 @@ process.on("unhandledRejection", (reason) => {
 // Some backend modules resolve paths off process.cwd() (uploads, stored PDFs),
 // a holdover from when the backend always ran with cwd=backend/. Pin it.
 process.chdir(BACKEND_DIR);
+
+// ---------------------------------------------------------------------------
+// Static file serving for the built SPA
+// ---------------------------------------------------------------------------
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".txt": "text/plain; charset=utf-8",
+  ".pdf": "application/pdf",
+  ".map": "application/json; charset=utf-8",
+};
+
+function sendFile(res, filePath, cacheControl) {
+  const ext = path.extname(filePath).toLowerCase();
+  res.setHeader("Content-Type", MIME[ext] || "application/octet-stream");
+  res.setHeader("Cache-Control", cacheControl);
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  const stream = fs.createReadStream(filePath);
+  stream.on("error", () => {
+    res.statusCode = 500;
+    res.end("Internal Server Error");
+  });
+  stream.pipe(res);
+}
+
+/**
+ * Serve the built SPA.
+ *
+ * Files under /assets carry a content hash in their name, so they can be
+ * cached forever; index.html must never be cached or visitors would keep
+ * loading an old build after a deploy. Anything that isn't a real file falls
+ * back to index.html, which is what makes client-side routes work on refresh.
+ */
+function serveStatic(req, res) {
+  const indexFile = path.join(WEB_DIST, "index.html");
+
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.statusCode = 405;
+    return res.end("Method Not Allowed");
+  }
+
+  const pathname = decodeURIComponent((req.url || "/").split("?")[0]);
+  // Resolve inside WEB_DIST and confirm it stayed there (path traversal).
+  const resolved = path.resolve(WEB_DIST, "." + pathname);
+  const root = path.resolve(WEB_DIST);
+  const inside = resolved === root || resolved.startsWith(root + path.sep);
+
+  if (inside && resolved !== root) {
+    try {
+      const stat = fs.statSync(resolved);
+      if (stat.isFile()) {
+        const immutable = pathname.startsWith("/assets/");
+        return sendFile(
+          res,
+          resolved,
+          immutable
+            ? "public, max-age=31536000, immutable"
+            : "public, max-age=3600"
+        );
+      }
+    } catch {
+      // Not a file -- fall through to the SPA entry point below.
+    }
+  }
+
+  return sendFile(res, indexFile, "no-cache");
+}
 
 // Diagnostic state, exposed at /__dbcheck.
 let dbStatus = { checked: false };
@@ -92,9 +185,20 @@ async function main() {
   }
 
   const server = http.createServer((req, res) => {
-    if ((req.url || "") === "/__dbcheck") {
+    const url = req.url || "/";
+
+    if (url === "/__dbcheck") {
       res.setHeader("Content-Type", "application/json");
       return res.end(JSON.stringify(dbStatus));
+    }
+
+    // The API owns /api/*; everything else is the frontend.
+    if (url === "/api" || url.startsWith("/api/")) {
+      return app(req, res);
+    }
+
+    if (HAS_WEB) {
+      return serveStatic(req, res);
     }
     return app(req, res);
   });
