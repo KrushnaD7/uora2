@@ -166,23 +166,42 @@ async function main() {
   const { prisma } = require(path.join(BACKEND_DIR, "dist", "config", "prisma"));
   const { initializeDatabase } = require(path.join(BACKEND_DIR, "dist", "config", "db-init"));
 
-  // --- Database: SQLite file. Create the schema on first run and ensure the
-  // admin account exists. Local file, no network, so awaiting this is safe.
-  try {
-    await initializeDatabase();
-    const users = await prisma.users.count();
-    dbStatus = { checked: true, ok: true, userCount: users };
-    console.log("[api] database ready ✓  users:", users);
-  } catch (err) {
-    dbStatus = {
-      checked: true,
-      ok: false,
-      error: String(err && err.message ? err.message : err),
-      stack: err && err.stack ? err.stack.split("\n").slice(0, 4) : undefined,
-    };
-    console.error("[api] DATABASE INIT FAILED:", dbStatus.error);
-    // Keep serving so the diagnostic endpoint stays reachable.
-  }
+  // --- Database: create the SQLite schema on first run and ensure the admin
+  // account exists.
+  //
+  // Deliberately NOT awaited before listening. If this ever stalls, awaiting
+  // it here would mean the port is never opened -- the host then holds every
+  // request until it times out, which looks like a dead site with no clue as
+  // to why. Starting the listener first keeps the app reachable (and
+  // /__dbcheck readable) whatever the database is doing. The timeout turns a
+  // hang into a reported error instead of silence.
+  const DB_INIT_TIMEOUT_MS = 20000;
+  const initDatabase = async () => {
+    try {
+      await Promise.race([
+        (async () => {
+          await initializeDatabase();
+          const users = await prisma.users.count();
+          dbStatus = { checked: true, ok: true, userCount: users };
+          console.log("[api] database ready, users:", users);
+        })(),
+        new Promise((_resolve, reject) =>
+          setTimeout(
+            () => reject(new Error("database init timed out after " + DB_INIT_TIMEOUT_MS + "ms")),
+            DB_INIT_TIMEOUT_MS
+          )
+        ),
+      ]);
+    } catch (err) {
+      dbStatus = {
+        checked: true,
+        ok: false,
+        error: String(err && err.message ? err.message : err),
+        stack: err && err.stack ? String(err.stack).slice(0, 400) : undefined,
+      };
+      console.error("[api] DATABASE INIT FAILED:", dbStatus.error);
+    }
+  };
 
   const server = http.createServer((req, res) => {
     const url = req.url || "/";
@@ -214,6 +233,8 @@ async function main() {
     console.log(`🌐 http://${HOSTNAME}:${PORT}`);
     console.log(`🌍 ${process.env.NODE_ENV || "production"}`);
     console.log("====================================");
+    // Port is open; now prepare the database in the background.
+    void initDatabase();
   });
 
   startScheduler();
