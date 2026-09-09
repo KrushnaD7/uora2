@@ -159,87 +159,94 @@ function serveStatic(req, res) {
 }
 
 // ---------------------------------------------------------------------------
-// Choosing where the SQLite file lives
+// Choosing how to reach the database
 // ---------------------------------------------------------------------------
-// The preferred location is outside the deployment so redeploys don't delete
-// the data. That directory can be created and written to on this host, but
-// SQLite itself hung opening a database there -- opening a database needs file
-// LOCKING, which a plain write test doesn't exercise and which network-mounted
-// home directories often don't support.
-//
-// So rather than assume, each candidate is opened for real (with a timeout)
-// and the first one that actually works is used. The fallback lives inside the
-// deployment: it works, but a redeploy replaces that directory, so the result
-// is reported prominently rather than passed over in silence.
+// Reaching MySQL differs per host. On this one the app's TCP connections to
+// the server are dropped -- they hang rather than refuse -- while the Unix
+// socket works, which is how phpMyAdmin talks to the same server. Rather than
+// assume either, each option is genuinely connected to (with a timeout) and
+// the first that answers is used. The choice is reported through /__dbcheck so
+// it is never a mystery which one is in play.
 const dbLocationReport = { candidates: [] };
 
-async function probeSqlite(file, timeoutMs) {
+async function probeMysql(label, options, timeoutMs) {
   const started = Date.now();
-  let client;
+  let conn;
   try {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    const { createClient } = require(
-      path.join(BACKEND_DIR, "node_modules", "@libsql/client")
-    );
-    client = createClient({ url: "file:" + file });
-    await Promise.race([
-      client.execute("SELECT 1"),
+    // Resolve by package name from the backend's node_modules. Requiring the
+    // directory path directly fails for packages that declare "exports"
+    // without a "main", which is the case here.
+    const mariadb = require(require.resolve("mariadb", { paths: [BACKEND_DIR] }));
+    conn = await Promise.race([
+      mariadb.createConnection({ ...options, connectTimeout: timeoutMs }),
       new Promise((_resolve, reject) =>
         setTimeout(() => reject(new Error("timed out after " + timeoutMs + "ms")), timeoutMs)
       ),
     ]);
-    return { file, ok: true, ms: Date.now() - started };
+    await conn.query("SELECT 1");
+    return { via: label, ok: true, ms: Date.now() - started };
   } catch (err) {
     return {
-      file,
+      via: label,
       ok: false,
       ms: Date.now() - started,
       error: String(err && err.message ? err.message : err),
     };
   } finally {
     try {
-      if (client && typeof client.close === "function") client.close();
+      if (conn && typeof conn.end === "function") await conn.end();
     } catch {
-      /* closing a failed client is not interesting */
+      /* closing a failed connection is not interesting */
     }
   }
 }
 
 /**
- * Pick a usable database file and expose it through DATABASE_FILE, which is
- * what config/prisma.ts reads. Must run BEFORE the Prisma client is required.
+ * Find a working route to MySQL and export it as DB_SOCKET_PATH or DB_HOST,
+ * which is what config/prisma.ts reads. Must run BEFORE the Prisma client is
+ * required.
  */
-async function chooseDatabaseFile() {
-  const home = process.env.HOME || os.homedir() || __dirname;
-  const preferred =
-    process.env.DATABASE_FILE || path.join(home, "uora-data", "uora.db");
-  const fallback = path.join(__dirname, "data", "uora.db");
+async function chooseDatabaseConnection() {
+  const url = new URL(process.env.DATABASE_URL);
+  const creds = {
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace(/^\//, ""),
+  };
 
-  const candidates = preferred === fallback ? [preferred] : [preferred, fallback];
+  const socketPath = process.env.DB_SOCKET_PATH || "/var/lib/mysql/mysql.sock";
+  const port = Number(url.port) || 3306;
+
+  const candidates = [
+    { label: "socket " + socketPath, options: { ...creds, socketPath }, apply: () => {
+        process.env.DB_SOCKET_PATH = socketPath;
+      } },
+    { label: "tcp " + url.hostname + ":" + port, options: { ...creds, host: url.hostname, port }, apply: () => {
+        delete process.env.DB_SOCKET_PATH;
+        process.env.DB_HOST = url.hostname;
+        process.env.DB_PORT = String(port);
+      } },
+    { label: "tcp localhost:" + port, options: { ...creds, host: "localhost", port }, apply: () => {
+        delete process.env.DB_SOCKET_PATH;
+        process.env.DB_HOST = "localhost";
+        process.env.DB_PORT = String(port);
+      } },
+  ];
 
   for (const candidate of candidates) {
-    const result = await probeSqlite(candidate, 8000);
+    const result = await probeMysql(candidate.label, candidate.options, 8000);
     dbLocationReport.candidates.push(result);
     if (result.ok) {
-      process.env.DATABASE_FILE = candidate;
-      dbLocationReport.using = candidate;
-      dbLocationReport.persistent = candidate === preferred;
-      if (!dbLocationReport.persistent) {
-        console.warn(
-          "[api] WARNING: using a database inside the deployment (" +
-            candidate +
-            "). It works, but a redeploy will replace it."
-        );
-      } else {
-        console.log("[api] database file:", candidate);
-      }
+      candidate.apply();
+      dbLocationReport.using = candidate.label;
+      console.log("[api] database reachable via " + candidate.label);
       return;
     }
-    console.error("[api] cannot use " + candidate + ": " + result.error);
+    console.error("[api] cannot reach database via " + candidate.label + ": " + result.error);
   }
 
   dbLocationReport.using = null;
-  console.error("[api] no usable database location found");
+  console.error("[api] no working route to the database");
 }
 
 // Diagnostic state, exposed at /__dbcheck.
@@ -249,7 +256,7 @@ async function main() {
   // Settle on a working database file first: config/prisma.ts reads
   // DATABASE_FILE when it builds the client, so this has to happen before
   // that module is required.
-  await chooseDatabaseFile();
+  await chooseDatabaseConnection();
 
   const app = require(path.join(BACKEND_DIR, "dist", "app")).default;
   const { startScheduler } = require(path.join(BACKEND_DIR, "dist", "scheduler"));

@@ -1,40 +1,75 @@
-import path from "path";
-import os from "os";
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-/**
- * Resolve the SQLite database file path.
- *
- * The file MUST live outside the deployment directory, which Hostinger's Web
- * App replaces on every redeploy (that would wipe the data). We put it under
- * the account home directory (persistent across deploys) unless DATABASE_FILE
- * overrides it.
- */
-export function resolveDbFile(): string {
-  if (process.env.DATABASE_FILE) return process.env.DATABASE_FILE;
-  const home = process.env.HOME || os.homedir() || process.cwd();
-  return path.join(home, "uora-data", "uora.db");
+export interface DbConnection {
+  /** Unix socket path, when connecting that way. */
+  socketPath?: string;
+  host?: string;
+  port?: number;
+  user: string;
+  password: string;
+  database: string;
+  connectionLimit: number;
 }
 
 /**
- * Prisma Client backed by SQLite via the libsql driver adapter.
+ * Build the connection settings from DATABASE_URL.
  *
- * With `driverAdapters` + `queryCompiler`, Prisma uses an in-process WASM
- * query compiler plus this pure-JS driver -- no native Rust engine, no Tokio
- * threads. SQLite itself is a single file: no DB server, no socket, no TCP,
- * no connection pool. This removes the entire class of connection/threading
- * problems that MySQL hit on Hostinger shared hosting.
+ * How to reach the server differs per host: TCP works in most places, but on
+ * this shared host the app's TCP connections to MySQL are dropped, so a Unix
+ * socket is used instead. start-api.js probes the options and exports the one
+ * that actually connects as DB_SOCKET_PATH / DB_HOST, which is what the
+ * overrides below read.
+ */
+export function resolveDbConnection(): DbConnection {
+  const url = new URL(process.env.DATABASE_URL as string);
+  const connectionLimit =
+    Number(url.searchParams.get("connection_limit")) ||
+    Number(process.env.DB_CONNECTION_LIMIT) ||
+    3;
+
+  const common = {
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace(/^\//, ""),
+    connectionLimit,
+  };
+
+  const socketPath = process.env.DB_SOCKET_PATH;
+  if (socketPath) {
+    return { ...common, socketPath };
+  }
+
+  return {
+    ...common,
+    host: process.env.DB_HOST || url.hostname,
+    port: Number(process.env.DB_PORT || url.port) || 3306,
+  };
+}
+
+/**
+ * Prisma Client over MySQL/MariaDB.
+ *
+ * Uses the driver adapter (with queryCompiler) rather than Prisma's native
+ * engine: that engine spawns a thread pool this host cannot provide, and
+ * panicked with "timer has gone away" on every query. The JS driver has no
+ * such requirement.
  */
 const prismaClientSingleton = () => {
   const isProduction = process.env.NODE_ENV === "production";
-  const dbFile = resolveDbFile();
+  const conn = resolveDbConnection();
 
-  const adapter = new PrismaLibSQL({ url: `file:${dbFile}` });
+  const adapter = new PrismaMariaDb({
+    ...conn,
+    // Fail rather than hang if the server cannot be reached.
+    connectTimeout: 10_000,
+    acquireTimeout: 10_000,
+    idleTimeout: 60,
+  });
 
   return new PrismaClient({
     adapter,

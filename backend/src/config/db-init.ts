@@ -1,23 +1,15 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcrypt";
-import { prisma, resolveDbFile } from "./prisma";
+import { prisma, resolveDbConnection } from "./prisma";
 
-/**
- * Prepare the SQLite database on startup.
- *
- * SQLite is a plain file, so there's no migration engine to run at runtime.
- * We create the schema from a pre-generated DDL script the first time the file
- * is empty, then ensure the admin account exists. Both steps are idempotent
- * and fast (local file, no network), so this is safe to run on every boot.
- */
 /**
  * Progress log for the startup sequence below.
  *
  * Startup runs before anything can be inspected by hand, so when a step stalls
  * on the host there is otherwise nothing to go on. Each step is recorded with
  * its duration and surfaced through /__dbcheck, which turns "it timed out"
- * into "it timed out opening the database file".
+ * into "it timed out creating the schema".
  */
 export const initSteps: Array<{ step: string; ms?: number; error?: string }> = [];
 
@@ -38,30 +30,30 @@ async function track<T>(step: string, fn: () => Promise<T> | T): Promise<T> {
   }
 }
 
+/**
+ * Prepare the database on startup.
+ *
+ * Creates the schema from a pre-generated DDL script when the tables are not
+ * there yet, then ensures the admin account exists. Both are idempotent, so
+ * this runs safely on every boot and there is no migration step to remember.
+ */
 export async function initializeDatabase(): Promise<void> {
-  const dbFile = resolveDbFile();
+  const conn = resolveDbConnection();
   initSteps.length = 0;
-  initSteps.push({ step: `path: ${dbFile}`, ms: 0 });
-
-  await track("create data directory", () => {
-    fs.mkdirSync(path.dirname(dbFile), { recursive: true });
+  initSteps.push({
+    step: `database: ${conn.database} via ${conn.socketPath ? "socket " + conn.socketPath : conn.host + ":" + conn.port}`,
+    ms: 0,
   });
 
-  await track("check directory is writable", () => {
-    const probe = path.join(path.dirname(dbFile), ".write-probe");
-    fs.writeFileSync(probe, "ok");
-    fs.unlinkSync(probe);
-  });
-
-  // Create tables if the schema isn't there yet.
-  const existing = (await track("open database and read schema", () =>
+  // Does the schema exist yet? Checking one known table is enough.
+  const existing = (await track("connect and look for tables", () =>
     prisma.$queryRawUnsafe(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'users'"
     )
-  )) as Array<{ name: string }>;
+  )) as Array<Record<string, unknown>>;
 
   if (existing.length === 0) {
-    const sqlPath = path.join(__dirname, "..", "..", "prisma", "init-sqlite.sql");
+    const sqlPath = path.join(__dirname, "..", "..", "prisma", "init-mysql.sql");
     const sql = fs.readFileSync(sqlPath, "utf8");
     const statements = sql
       .split(";")
@@ -84,6 +76,7 @@ export async function initializeDatabase(): Promise<void> {
   const adminCount = await track("count admin account", () =>
     prisma.users.count({ where: { email: adminEmail } })
   );
+
   if (adminCount === 0) {
     const hashed = await bcrypt.hash(
       process.env.ADMIN_PASSWORD || "Admin@123",
@@ -102,6 +95,7 @@ export async function initializeDatabase(): Promise<void> {
       })
     );
   } else {
+    initSteps.push({ step: "admin account present", ms: 0 });
     console.log("[db] admin account present:", adminEmail);
   }
 }
