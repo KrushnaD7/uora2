@@ -22,3 +22,6 @@ hostinger.env
 # Local-only: deployment secrets and the local SQLite DB / uploads
 .env.hostinger
 .localdata/
+
+# Fallback database location (used only when the persistent path is unusable)
+data/

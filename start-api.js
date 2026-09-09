@@ -26,6 +26,7 @@ if (!process.env.UV_THREADPOOL_SIZE) {
 
 const fs = require("fs");
 const http = require("http");
+const os = require("os");
 const path = require("path");
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -157,10 +158,99 @@ function serveStatic(req, res) {
   return sendFile(res, indexFile, "no-cache");
 }
 
+// ---------------------------------------------------------------------------
+// Choosing where the SQLite file lives
+// ---------------------------------------------------------------------------
+// The preferred location is outside the deployment so redeploys don't delete
+// the data. That directory can be created and written to on this host, but
+// SQLite itself hung opening a database there -- opening a database needs file
+// LOCKING, which a plain write test doesn't exercise and which network-mounted
+// home directories often don't support.
+//
+// So rather than assume, each candidate is opened for real (with a timeout)
+// and the first one that actually works is used. The fallback lives inside the
+// deployment: it works, but a redeploy replaces that directory, so the result
+// is reported prominently rather than passed over in silence.
+const dbLocationReport = { candidates: [] };
+
+async function probeSqlite(file, timeoutMs) {
+  const started = Date.now();
+  let client;
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    const { createClient } = require(
+      path.join(BACKEND_DIR, "node_modules", "@libsql/client")
+    );
+    client = createClient({ url: "file:" + file });
+    await Promise.race([
+      client.execute("SELECT 1"),
+      new Promise((_resolve, reject) =>
+        setTimeout(() => reject(new Error("timed out after " + timeoutMs + "ms")), timeoutMs)
+      ),
+    ]);
+    return { file, ok: true, ms: Date.now() - started };
+  } catch (err) {
+    return {
+      file,
+      ok: false,
+      ms: Date.now() - started,
+      error: String(err && err.message ? err.message : err),
+    };
+  } finally {
+    try {
+      if (client && typeof client.close === "function") client.close();
+    } catch {
+      /* closing a failed client is not interesting */
+    }
+  }
+}
+
+/**
+ * Pick a usable database file and expose it through DATABASE_FILE, which is
+ * what config/prisma.ts reads. Must run BEFORE the Prisma client is required.
+ */
+async function chooseDatabaseFile() {
+  const home = process.env.HOME || os.homedir() || __dirname;
+  const preferred =
+    process.env.DATABASE_FILE || path.join(home, "uora-data", "uora.db");
+  const fallback = path.join(__dirname, "data", "uora.db");
+
+  const candidates = preferred === fallback ? [preferred] : [preferred, fallback];
+
+  for (const candidate of candidates) {
+    const result = await probeSqlite(candidate, 8000);
+    dbLocationReport.candidates.push(result);
+    if (result.ok) {
+      process.env.DATABASE_FILE = candidate;
+      dbLocationReport.using = candidate;
+      dbLocationReport.persistent = candidate === preferred;
+      if (!dbLocationReport.persistent) {
+        console.warn(
+          "[api] WARNING: using a database inside the deployment (" +
+            candidate +
+            "). It works, but a redeploy will replace it."
+        );
+      } else {
+        console.log("[api] database file:", candidate);
+      }
+      return;
+    }
+    console.error("[api] cannot use " + candidate + ": " + result.error);
+  }
+
+  dbLocationReport.using = null;
+  console.error("[api] no usable database location found");
+}
+
 // Diagnostic state, exposed at /__dbcheck.
 let dbStatus = { checked: false };
 
 async function main() {
+  // Settle on a working database file first: config/prisma.ts reads
+  // DATABASE_FILE when it builds the client, so this has to happen before
+  // that module is required.
+  await chooseDatabaseFile();
+
   const app = require(path.join(BACKEND_DIR, "dist", "app")).default;
   const { startScheduler } = require(path.join(BACKEND_DIR, "dist", "scheduler"));
   const { prisma } = require(path.join(BACKEND_DIR, "dist", "config", "prisma"));
@@ -182,7 +272,7 @@ async function main() {
         (async () => {
           await initializeDatabase();
           const users = await prisma.users.count();
-          dbStatus = { checked: true, ok: true, userCount: users, steps: initSteps };
+          dbStatus = { checked: true, ok: true, userCount: users, location: dbLocationReport, steps: initSteps };
           console.log("[api] database ready, users:", users);
         })(),
         new Promise((_resolve, reject) =>
@@ -199,6 +289,7 @@ async function main() {
         error: String(err && err.message ? err.message : err),
         stack: err && err.stack ? String(err.stack).slice(0, 400) : undefined,
         // Which step it reached tells us what actually stalled.
+        location: dbLocationReport,
         steps: initSteps,
       };
       console.error("[api] DATABASE INIT FAILED:", dbStatus.error);
