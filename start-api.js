@@ -164,7 +164,7 @@ async function main() {
   const app = require(path.join(BACKEND_DIR, "dist", "app")).default;
   const { startScheduler } = require(path.join(BACKEND_DIR, "dist", "scheduler"));
   const { prisma } = require(path.join(BACKEND_DIR, "dist", "config", "prisma"));
-  const { initializeDatabase } = require(path.join(BACKEND_DIR, "dist", "config", "db-init"));
+  const { initializeDatabase, initSteps } = require(path.join(BACKEND_DIR, "dist", "config", "db-init"));
 
   // --- Database: create the SQLite schema on first run and ensure the admin
   // account exists.
@@ -182,7 +182,7 @@ async function main() {
         (async () => {
           await initializeDatabase();
           const users = await prisma.users.count();
-          dbStatus = { checked: true, ok: true, userCount: users };
+          dbStatus = { checked: true, ok: true, userCount: users, steps: initSteps };
           console.log("[api] database ready, users:", users);
         })(),
         new Promise((_resolve, reject) =>
@@ -198,6 +198,8 @@ async function main() {
         ok: false,
         error: String(err && err.message ? err.message : err),
         stack: err && err.stack ? String(err.stack).slice(0, 400) : undefined,
+        // Which step it reached tells us what actually stalled.
+        steps: initSteps,
       };
       console.error("[api] DATABASE INIT FAILED:", dbStatus.error);
     }
