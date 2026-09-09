@@ -18,3 +18,7 @@ backend/migration/
 .env.production
 .env*.local
 hostinger.env
+
+# Local-only: deployment secrets and the local SQLite DB / uploads
+.env.hostinger
+.localdata/
