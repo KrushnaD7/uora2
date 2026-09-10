@@ -92,6 +92,15 @@ export default function JournalDetailPage() {
               <Button href="#archive" variant="secondary" size="lg">
                 Browse Volumes &amp; Issues
               </Button>
+              <Button
+                href={`/journal-docs/${slug}.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="secondary"
+                size="lg"
+              >
+                Download Journal Guide (PDF)
+              </Button>
             </div>
           </div>
         </Container>

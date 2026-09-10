@@ -46,7 +46,17 @@ export const Link = forwardRef<HTMLAnchorElement, NextLinkProps>(
     { href, children, prefetch, scroll, replace, shallow, passHref, legacyBehavior, ...rest },
     ref
   ) {
-    if (!href || isExternal(href)) {
+    // A plain anchor for external/hash targets, and also whenever the link is
+    // a real navigation React Router shouldn't intercept -- a file download
+    // (`download`) or a new tab (`target`). Otherwise the router would swallow
+    // the click and try to match it as an in-app route.
+    const isPlainAnchor =
+      !href ||
+      isExternal(href) ||
+      (rest as { download?: unknown }).download !== undefined ||
+      (rest as { target?: unknown }).target !== undefined;
+
+    if (isPlainAnchor) {
       return (
         <a ref={ref} href={href} {...rest}>
           {children}
