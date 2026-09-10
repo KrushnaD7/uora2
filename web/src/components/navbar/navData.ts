@@ -9,7 +9,7 @@ export const navItems: NavItem[] = [
   { label: "About", href: "/#about", section: "about" },
   { label: "Vision", href: "/#vision", section: "vision" },
   { label: "Mission", href: "/#mission", section: "mission" },
-  { label: "Journals", href: "/#journals", section: "journals" },
+  { label: "Journals", href: "/journals" },
   { label: "Editorial", href: "/#editorial", section: "editorial" },
   { label: "Why UORA", href: "/#why-uora", section: "why-uora" },
   { label: "Gallery", href: "/gallery" },
