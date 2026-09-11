@@ -331,7 +331,37 @@ export class PublicRepository {
 
           include: {
 
-            journal: true
+            journal: true,
+
+            submission: {
+
+              include: {
+
+                authors: {
+
+                  orderBy: { authorOrder: "asc" },
+
+                  include: {
+
+                    author: {
+
+                      select: { fullName: true }
+
+                    }
+
+                  }
+
+                }
+
+              }
+
+            }
+
+          },
+
+          orderBy: {
+
+            publishedAt: "asc"
 
           }
 
