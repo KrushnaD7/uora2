@@ -323,12 +323,6 @@ export class PublicRepository {
             publishedAt: { not: null }
           },
 
-          orderBy: {
-
-            publishedAt: "desc"
-
-          },
-
           include: {
 
             journal: true,
