@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import bcrypt from "bcrypt";
 import { prisma, resolveDbConnection } from "./prisma";
+import { seedUjgsm } from "./seed-ujgsm";
 
 /**
  * Progress log for the startup sequence below.
@@ -97,5 +98,15 @@ export async function initializeDatabase(): Promise<void> {
   } else {
     initSteps.push({ step: "admin account present", ms: 0 });
     console.log("[db] admin account present:", adminEmail);
+  }
+
+  // One-time content seed for the UJGSM journal + its first issue and articles.
+  // Idempotent (skips once seeded) and non-fatal: a failure here must never
+  // stop the app from serving, so it is logged and swallowed.
+  try {
+    const result = await track("seed ujgsm content", () => seedUjgsm());
+    console.log("[db]", result);
+  } catch (err) {
+    console.error("[db] ujgsm seed skipped:", err);
   }
 }
