@@ -19,6 +19,11 @@ import type { JournalModel } from "@/lib/api/journals";
 import { useAsyncData } from "@/lib/useAsyncData";
 import PageLoading from "@/components/ui/PageLoading";
 
+// Journals that ship a downloadable guide PDF under web/public/journal-docs.
+// Others (e.g. ujgsm) have no guide document yet, so the button is hidden
+// rather than linking to a missing file.
+const JOURNALS_WITH_GUIDE = new Set(["ujhss", "ujetis", "ujhaes", "ujpechv"]);
+
 export default function JournalDetailPage() {
   const slug = useJournalSlug();
   const { data: res, loading } = useAsyncData(
@@ -92,15 +97,17 @@ export default function JournalDetailPage() {
               <Button href="#archive" variant="secondary" size="lg">
                 Browse Volumes &amp; Issues
               </Button>
-              <Button
-                href={`/journal-docs/${slug}.pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="secondary"
-                size="lg"
-              >
-                Download Journal Guide (PDF)
-              </Button>
+              {JOURNALS_WITH_GUIDE.has(slug) && (
+                <Button
+                  href={`/journal-docs/${slug}.pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="secondary"
+                  size="lg"
+                >
+                  Download Journal Guide (PDF)
+                </Button>
+              )}
             </div>
           </div>
         </Container>
