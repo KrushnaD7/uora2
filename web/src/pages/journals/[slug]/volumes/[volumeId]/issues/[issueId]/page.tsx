@@ -166,7 +166,7 @@ function ArticleRow({ article }: { article: ArticleModel }) {
       {/* Title row */}
       <div className="flex items-start justify-between gap-4">
         <Link
-          href={`/articles/${article.id}`}
+          href={`/articles/${(article as any).submission?.paperId ?? article.id}`}
           className="flex-1 text-[17px] font-semibold leading-snug text-brand-700 transition-colors hover:text-brand-800 hover:underline underline-offset-2"
         >
           {article.title}
@@ -203,7 +203,7 @@ function ArticleRow({ article }: { article: ArticleModel }) {
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-3 pt-1">
         <Button
-          href={`/articles/${article.id}`}
+          href={`/articles/${(article as any).submission?.paperId ?? article.id}`}
           variant="secondary"
           size="sm"
         >

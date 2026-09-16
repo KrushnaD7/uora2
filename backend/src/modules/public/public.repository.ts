@@ -329,7 +329,9 @@ export class PublicRepository {
 
             submission: {
 
-              include: {
+              select: {
+
+                paperId: true,
 
                 authors: {
 
@@ -355,7 +357,7 @@ export class PublicRepository {
 
           orderBy: {
 
-            publishedAt: "asc"
+            submission: { paperId: "asc" }
 
           }
 
@@ -471,32 +473,32 @@ export class PublicRepository {
 
 
   // Get Single Public Article
+  // `id` may be a UUID (article.id) or a paperId slug (e.g. "UJGSM-2025-0001").
+  // UUID is tried first; non-UUID strings are looked up via submission.paperId.
 
   getArticleById(
     id: string
   ) {
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+    const where = isUuid
+      ? {
+          id,
+          publishedAt: { not: null as null },
+          journal: { status: "ACTIVE" },
+          issue: { status: "PUBLISHED" },
+        }
+      : {
+          submission: { paperId: id.toUpperCase() },
+          publishedAt: { not: null as null },
+          journal: { status: "ACTIVE" },
+          issue: { status: "PUBLISHED" },
+        };
+
     return prisma.article.findFirst({
 
-      where: {
-
-        id,
-
-        publishedAt: { not: null },
-
-        journal: {
-
-          status: "ACTIVE"
-
-        },
-
-        issue: {
-
-          status: "PUBLISHED"
-
-        }
-
-      },
+      where,
 
       include: {
 
