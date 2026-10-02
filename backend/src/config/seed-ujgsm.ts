@@ -201,6 +201,27 @@ const ARTICLES: SeedArticle[] = [
     abstract:
       "This paper aims to maximize wear resistance of tungsten-copper (W-Cu) composites on Response Surface Methodology (RSM) and Box-Behnken Design (BBD). The experimental variables included the reinforcement percentage, the temperature and the mechanical load.\n\nRegression and ANOVA analysis showed that temperature and percentage of Cu-W are significant variables that influence the wear rate, whereas quadratic terms showed weaker influences. The optimal conditions were established as 40% Cu, 200°C and 100 N load with the minimum wear rate and a desirability of 1.0.\n\nThe synergistic effects of temperature and reinforcement content on wear behavior were demonstrated with the help of contour and surface plots. It is found that RSM is efficient and minimizes experimental trials with accurate optimization to allow the production of W-Cu composites with an excellent level of durability in electrical contacts and high-temperature tooling.",
   },
+  {
+    paperId: "UJGSM-2025-0006",
+    pdf: "ujgsm-article6.pdf",
+    doi: "10.67232/ujgsm.2025.v1.i1.06",
+    title:
+      "From Internal Combustion to Electric Mobility: A Mixed-Method Investigation of Resilience, Innovation, and Strategic Adaptation among Auto Ancillary Units in the Marathwada Region",
+    keywords:
+      "Electric vehicle transition, Auto ancillary industry, Organizational resilience, Spare parts compression, Marathwada region, EV adoption",
+    correspondingEmail: "wankhadepooja053@gmail.com",
+    authors: [
+      splitAuthor(
+        "Pooja Manohar WankhadeResearch Scholar, Department of Management Science, Dr. Babasaheb Ambedkar Marathwada University, Chhatrapati Sambhajinagar, Maharashtra 431004, India",
+        "wankhadepooja053@gmail.com"
+      ),
+      splitAuthor(
+        "Gurpreet AttalAssociate Professor, Devgiri Institute of Engineering and Management Studies, Chhatrapati Sambhajinagar, Maharashtra 431005, India"
+      ),
+    ],
+    abstract:
+      "The transition from internal combustion engine (ICE) cars to electric mobility is one of the most impactful industrial changes of the 21st century. Although much research has focused on original equipment manufacturers (OEMs) and consumer uptake, the fortunes of the large network of auto ancillary suppliers, especially in developing economies, are poorly understood. This paper examines the challenges that 200 auto ancillary units in the Marathwada region of India are facing to transition from ICE to electric vehicles (EV). Marathwada is a special place as it has a legacy automotive ecosystem of over 1200 ancillary companies, while also offering fantastic opportunities to mega-EV investments by Toyota Kirloskar Motors, Ather Energy and JSW Green Mobility.\n\nWe quantify the 'spare parts compression effect'—the dramatic reduction in the number of components from hundreds of moving parts in an ICE drivetrain to around 17–20 in an EV—using a survey of 200 companies and semi-structured interviews with 24 companies. According to our data, 84% of engine/transmission suppliers experienced significant declines in orders (mean 4.6/5 on a 5-point scale). The results from the SEM analysis indicate that the relationship between the resilience enablers (financial reserves, manufacturing flexibility, and workforce skills) and strategic adaptation (β=0.51, p<0.001) is completely mediated via the concept of innovation capability.\n\nMore than half of micro companies (51%) predict EV products will generate less than 20 percent of sales over the next three years, while more than 81% of the larger companies believe they will see sales of more than 20 percent. At this rate, 35–40% of the ancillary MSMEs in Marathwada could become obsolete within 10 years without special measures. We propose a policy roadmap comprising: (i) an EV Ancillary Transition Fund with retooling subsidies and skill vouchers; (ii) mandatory OEM supplier development programmes; and (iii) a 'Cluster 2.0' initiative to make the Marathwada Auto Cluster a hub of capability building. Our results provide practical lessons for industrial clusters undergoing clean technology transitions in emerging economies.",
+  },
 ];
 
 // The whole issue is dated August 2025.
