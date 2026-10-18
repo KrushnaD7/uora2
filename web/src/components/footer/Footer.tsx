@@ -104,10 +104,23 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col gap-6 border-t border-white/10 py-8 lg:flex-row lg:items-center lg:justify-between">
-          <p className="text-[13px] leading-6 text-navy-300">
-            © {year} Universal Oneness in Research Association (UORA). All
-            rights reserved.
-          </p>
+          <div className="flex flex-col gap-1">
+            <p className="text-[13px] leading-6 text-navy-300">
+              © {year} Universal Oneness in Research Association (UORA). All
+              rights reserved.
+            </p>
+            <p className="text-[12px] text-navy-400">
+              Designed &amp; Developed By{" "}
+              <a
+                href="https://vishxtechnologies.online/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent-300 transition-colors hover:text-white"
+              >
+                VishX Technologies
+              </a>
+            </p>
+          </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
